@@ -22,14 +22,14 @@ interface PostRequest {
 
 // Get the authenticated user's person URN
 async function getPersonUrn(): Promise<string> {
-  const res = await fetch("https://api.linkedin.com/v2/me", {
-    headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+  const res = await fetch("https://api.linkedin.com/rest/me", {
+    headers: LI_HEADERS,
   });
   const data = await res.json();
-  if (!res.ok || !data.id) {
+  if (!res.ok || !data.sub) {
     throw new Error(`Failed to get user info (${res.status}): ${JSON.stringify(data)}`);
   }
-  return `urn:li:person:${data.id}`;
+  return `urn:li:person:${data.sub}`;
 }
 
 // Step 1: Register image upload with LinkedIn
@@ -115,15 +115,15 @@ async function createPost(authorUrn: string, text: string, imageUrn: string): Pr
 // Fetch recent posts with engagement metrics
 async function fetchMetrics() {
   // Get user info
-  const meRes = await fetch("https://api.linkedin.com/v2/me", {
-    headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+  const meRes = await fetch("https://api.linkedin.com/rest/me", {
+    headers: LI_HEADERS,
   });
   const meData = await meRes.json();
   if (!meRes.ok) {
-    throw new Error(`Failed to get user info (${meRes.status})`);
+    throw new Error(`Failed to get user info (${meRes.status}): ${JSON.stringify(meData)}`);
   }
-  const personUrn = `urn:li:person:${meData.id}`;
-  const name = `${meData.localizedFirstName || ""} ${meData.localizedLastName || ""}`.trim();
+  const personUrn = `urn:li:person:${meData.sub}`;
+  const name = meData.name || `${meData.given_name || ""} ${meData.family_name || ""}`.trim();
 
   // Fetch recent posts by author
   const postsUrl = `https://api.linkedin.com/rest/posts?author=${encodeURIComponent(personUrn)}&q=author&count=25&sortBy=LAST_MODIFIED`;
@@ -170,7 +170,7 @@ async function fetchMetrics() {
         const activityUrn = postId.replace("urn:li:share:", "urn:li:activity:").replace("urn:li:ugcPost:", "urn:li:activity:");
         const socialRes = await fetch(
           `https://api.linkedin.com/v2/socialActions/${encodeURIComponent(activityUrn)}`,
-          { headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } }
+          { headers: LI_HEADERS }
         );
         if (socialRes.ok) {
           const social = await socialRes.json();
@@ -261,12 +261,12 @@ export default async (req: Request, _context: Context) => {
 
     // Default GET = connection check
     try {
-      const res = await fetch("https://api.linkedin.com/v2/me", {
-        headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+      const res = await fetch("https://api.linkedin.com/rest/me", {
+        headers: LI_HEADERS,
       });
       if (res.ok) {
         const data = await res.json();
-        const name = `${data.localizedFirstName || ""} ${data.localizedLastName || ""}`.trim() || "LinkedIn";
+        const name = data.name || `${data.given_name || ""} ${data.family_name || ""}`.trim() || "LinkedIn";
         return Response.json(
           { connected: true, org: name },
           { headers: CORS_HEADERS },
