@@ -339,6 +339,8 @@ export default function LinkedInPage() {
     }
   }
 
+  const PUBLISH_DELAY_MSG = 'La publicaci\u00f3n se realiza a trav\u00e9s de Metricool. Puede tardar ~5 minutos en aparecer en LinkedIn.';
+
   async function publishAll() {
     const drafts = queue
       .map((item, i) => ({ item, i }))
@@ -737,6 +739,10 @@ export default function LinkedInPage() {
                         </button>
                       )}
                     </div>
+
+                    {(item.status === 'published' || item.status === 'scheduled') && (
+                      <p className="text-xs text-slate-400 mt-1">{PUBLISH_DELAY_MSG}</p>
+                    )}
 
                     {item.error && (
                       <p className="text-xs text-red-500 mt-1">{item.error}</p>
