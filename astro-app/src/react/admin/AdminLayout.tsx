@@ -12,6 +12,7 @@ import {
   Trophy,
   Download,
   Users,
+  Camera,
 } from 'lucide-react';
 import type { User } from 'firebase/auth';
 import { signInWithGoogle, signOutUser, onAuthChange } from '../../lib/firebase-client';
@@ -51,6 +52,7 @@ export default function AdminLayout() {
     { name: 'Blog', href: '/admin/blog/', icon: FileText },
     { name: 'Casos de Éxito', href: '/admin/casos-de-exito/', icon: Trophy },
     { name: 'Lead Magnets', href: '/admin/lead-magnets/', icon: Download },
+    { name: 'Instagram', href: '/admin/instagram/', icon: Camera },
     { name: 'SEO & GEO', href: '/admin/seo/', icon: Search },
     { name: 'Feedback', href: '/admin/feedback/', icon: MessageSquare },
     { name: 'Leads', href: '/admin/leads/', icon: Users },
