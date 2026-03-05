@@ -63,7 +63,7 @@ async function schedulePost(
     },
     twitterData: { tags: [] },
     facebookData: { type: "IMAGE", title: "", boost: 0, boostPayer: null, boostBeneficiary: null },
-    instagramData: { type: "IMAGE", collaborators: [], carouselTags: [], showReelOnFeed: true, boost: 0 },
+    instagramData: { type: "IMAGE", collaborators: [], carouselTags: {}, showReelOnFeed: true, boost: 0 },
     pinterestData: { boardId: null, pinTitle: "", pinLink: "", pinNewFormat: false },
     youtubeData: { title: "", type: "VIDEO", privacy: "PUBLIC", tags: [], category: "", madeForKids: false },
     tiktokData: { disableComment: false, disableDuet: false, disableStitch: false, privacyOption: "PUBLIC" },
