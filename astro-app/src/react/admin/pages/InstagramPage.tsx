@@ -11,6 +11,15 @@ import {
   X,
   Calendar,
   ImageIcon,
+  BarChart3,
+  Heart,
+  MessageCircle,
+  Bookmark,
+  Share2,
+  Users,
+  TrendingUp,
+  RefreshCw,
+  ExternalLink,
 } from 'lucide-react';
 import { getAllPosts } from '../../../lib/firebase-client';
 
@@ -150,6 +159,32 @@ async function uploadToCloudinary(blob: Blob): Promise<string> {
   return data.secure_url;
 }
 
+// --- Metrics types ---
+
+interface IGAccount {
+  username: string;
+  name: string;
+  profile_picture_url: string;
+  followers_count: number;
+  follows_count: number;
+  media_count: number;
+}
+
+interface IGMedia {
+  id: string;
+  caption: string;
+  like_count: number;
+  comments_count: number;
+  timestamp: string;
+  media_url: string;
+  permalink: string;
+  media_type: string;
+  impressions: number;
+  reach: number;
+  saved: number;
+  shares: number;
+}
+
 // --- Component ---
 
 export default function CameraPage() {
@@ -161,6 +196,10 @@ export default function CameraPage() {
   const [previewItem, setPreviewItem] = useState<ScheduleItem | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [activeTab, setActiveTab] = useState<'publish' | 'metrics'>('publish');
+  const [metrics, setMetrics] = useState<{ account: IGAccount; media: IGMedia[] } | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsError, setMetricsError] = useState('');
 
   useEffect(() => {
     loadPosts();
@@ -174,6 +213,29 @@ export default function CameraPage() {
       console.error('Error loading posts:', e);
     }
     setLoading(false);
+  }
+
+  async function loadMetrics() {
+    setMetricsLoading(true);
+    setMetricsError('');
+    try {
+      const res = await fetch(FUNCTION_URL);
+      const text = await res.text();
+      let data: Record<string, unknown>;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Función no disponible (${res.status})`);
+      }
+      if (!res.ok) {
+        throw new Error((data.error as string) || `Error ${res.status}`);
+      }
+      setMetrics(data as unknown as { account: IGAccount; media: IGMedia[] });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error cargando métricas';
+      setMetricsError(msg);
+    }
+    setMetricsLoading(false);
   }
 
   function togglePost(id: string) {
@@ -323,10 +385,16 @@ export default function CameraPage() {
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: Record<string, unknown>;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Función no disponible (${res.status}). ¿Está desplegada?`);
+      }
 
       if (!res.ok) {
-        throw new Error(data.error || 'Error publishing');
+        throw new Error((data.error as string) || `Error ${res.status}: ${text.slice(0, 200)}`);
       }
 
       setScheduleItems((prev) =>
@@ -334,8 +402,8 @@ export default function CameraPage() {
           i === index
             ? {
                 ...it,
-                status: immediate ? 'published' : 'scheduled',
-                mediaId: data.media_id || data.container_id,
+                status: immediate ? 'published' as const : 'scheduled' as const,
+                mediaId: String(data.media_id || data.container_id || ''),
               }
             : it
         )
@@ -375,7 +443,7 @@ export default function CameraPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#032149] flex items-center gap-3">
             <Camera className="w-7 h-7 text-pink-500" />
@@ -385,7 +453,7 @@ export default function CameraPage() {
             Publica y programa posts desde tu contenido del blog
           </p>
         </div>
-        {scheduleItems.length > 0 && draftCount > 0 && (
+        {activeTab === 'publish' && scheduleItems.length > 0 && draftCount > 0 && (
           <button
             onClick={publishAll}
             className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
@@ -395,6 +463,189 @@ export default function CameraPage() {
           </button>
         )}
       </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 bg-slate-100 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => setActiveTab('publish')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'publish'
+              ? 'bg-white text-[#032149] shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Send className="w-4 h-4" />
+          Publicar
+        </button>
+        <button
+          onClick={() => { setActiveTab('metrics'); if (!metrics && !metricsLoading) loadMetrics(); }}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'metrics'
+              ? 'bg-white text-[#032149] shadow-sm'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4" />
+          Métricas
+        </button>
+      </div>
+
+      {/* Metrics Tab */}
+      {activeTab === 'metrics' && (
+        <div>
+          {metricsLoading && (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 text-[#6351d5] animate-spin" />
+            </div>
+          )}
+
+          {metricsError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm">
+              {metricsError}
+            </div>
+          )}
+
+          {metrics && !metricsLoading && (
+            <>
+              {/* Account overview */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
+                    <Users className="w-3.5 h-3.5" />
+                    Seguidores
+                  </div>
+                  <p className="text-2xl font-bold text-[#032149]">
+                    {metrics.account.followers_count.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
+                    <Users className="w-3.5 h-3.5" />
+                    Siguiendo
+                  </div>
+                  <p className="text-2xl font-bold text-[#032149]">
+                    {metrics.account.follows_count.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    Publicaciones
+                  </div>
+                  <p className="text-2xl font-bold text-[#032149]">
+                    {metrics.account.media_count.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center gap-2 text-slate-500 text-xs mb-1">
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    Engagement rate
+                  </div>
+                  <p className="text-2xl font-bold text-[#032149]">
+                    {metrics.media.length > 0
+                      ? (
+                          (metrics.media.reduce((sum, m) => sum + m.like_count + m.comments_count, 0) /
+                            metrics.media.length /
+                            Math.max(metrics.account.followers_count, 1)) *
+                          100
+                        ).toFixed(2) + '%'
+                      : '—'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Refresh button */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-[#032149]">
+                  Últimas publicaciones
+                </h2>
+                <button
+                  onClick={loadMetrics}
+                  disabled={metricsLoading}
+                  className="flex items-center gap-2 text-sm text-slate-500 hover:text-[#6351d5] transition-colors"
+                >
+                  <RefreshCw className={`w-4 h-4 ${metricsLoading ? 'animate-spin' : ''}`} />
+                  Actualizar
+                </button>
+              </div>
+
+              {/* Media table */}
+              <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-50">
+                        <th className="text-left p-3 font-medium text-slate-500">Post</th>
+                        <th className="text-center p-3 font-medium text-slate-500">
+                          <Heart className="w-4 h-4 mx-auto" />
+                        </th>
+                        <th className="text-center p-3 font-medium text-slate-500">
+                          <MessageCircle className="w-4 h-4 mx-auto" />
+                        </th>
+                        <th className="text-center p-3 font-medium text-slate-500">
+                          <Bookmark className="w-4 h-4 mx-auto" />
+                        </th>
+                        <th className="text-center p-3 font-medium text-slate-500">
+                          <Share2 className="w-4 h-4 mx-auto" />
+                        </th>
+                        <th className="text-center p-3 font-medium text-slate-500">
+                          <Eye className="w-4 h-4 mx-auto" />
+                        </th>
+                        <th className="text-center p-3 font-medium text-slate-500">Alcance</th>
+                        <th className="text-center p-3 font-medium text-slate-500"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {metrics.media.map((m) => (
+                        <tr key={m.id} className="border-b border-slate-100 hover:bg-slate-50">
+                          <td className="p-3">
+                            <div className="flex items-center gap-3">
+                              {m.media_url && (
+                                <img
+                                  src={m.media_url}
+                                  alt=""
+                                  className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                                />
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-xs text-[#032149] line-clamp-2 leading-tight">
+                                  {m.caption?.split('\n')[0]?.slice(0, 80) || '—'}
+                                </p>
+                                <p className="text-[10px] text-slate-400 mt-0.5">
+                                  {new Date(m.timestamp).toLocaleDateString('es-ES')}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="text-center p-3 text-slate-700 font-medium">{m.like_count}</td>
+                          <td className="text-center p-3 text-slate-700 font-medium">{m.comments_count}</td>
+                          <td className="text-center p-3 text-slate-700 font-medium">{m.saved}</td>
+                          <td className="text-center p-3 text-slate-700 font-medium">{m.shares}</td>
+                          <td className="text-center p-3 text-slate-700 font-medium">{m.impressions.toLocaleString()}</td>
+                          <td className="text-center p-3 text-slate-700 font-medium">{m.reach.toLocaleString()}</td>
+                          <td className="text-center p-3">
+                            <a
+                              href={m.permalink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-400 hover:text-[#6351d5] transition-colors"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Publish Tab */}
+      {activeTab === 'publish' && <>
 
       {/* Queue section */}
       {scheduleItems.length > 0 && (
@@ -715,6 +966,8 @@ export default function CameraPage() {
 
       {/* Hidden canvas for image generation */}
       <canvas ref={previewCanvasRef} className="hidden" />
+
+      </>}
     </div>
   );
 }
