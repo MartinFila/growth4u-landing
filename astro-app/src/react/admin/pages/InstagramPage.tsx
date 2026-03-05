@@ -801,7 +801,16 @@ export default function CameraPage() {
                           <CheckCircle2 className="w-5 h-5 text-green-500" />
                         )}
                         {item.status === 'scheduled' && (
-                          <Clock className="w-5 h-5 text-blue-500" />
+                          <>
+                            <button
+                              onClick={() => setPreviewItem(item)}
+                              className="p-1.5 text-slate-400 hover:text-[#6351d5] transition-colors"
+                              title="Preview"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <Clock className="w-5 h-5 text-blue-500" />
+                          </>
                         )}
                         {item.status === 'error' && (
                           <AlertCircle className="w-5 h-5 text-red-500" />
