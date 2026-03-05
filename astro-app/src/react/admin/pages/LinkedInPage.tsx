@@ -218,7 +218,7 @@ export default function LinkedInPage() {
 
   function connectLinkedIn() {
     const redirectUri = `${window.location.origin}/.netlify/functions/linkedin-callback`;
-    const scope = 'w_organization_social r_organization_social';
+    const scope = 'openid profile w_member_social r_organization_social';
     const url = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
     window.open(url, '_blank');
   }

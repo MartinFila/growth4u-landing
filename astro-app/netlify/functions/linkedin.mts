@@ -1,7 +1,6 @@
 import type { Context } from "@netlify/functions";
 
 const ACCESS_TOKEN = process.env.LINKEDIN_ACCESS_TOKEN;
-const ORG_ID = process.env.LINKEDIN_ORG_ID;
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -9,24 +8,38 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
+const LI_HEADERS = {
+  Authorization: `Bearer ${ACCESS_TOKEN}`,
+  "Content-Type": "application/json",
+  "LinkedIn-Version": "202401",
+  "X-Restli-Protocol-Version": "2.0.0",
+};
+
 interface PostRequest {
   text: string;
   imageUrl: string;
 }
 
+// Get the authenticated user's person URN
+async function getPersonUrn(): Promise<string> {
+  const res = await fetch("https://api.linkedin.com/v2/userinfo", {
+    headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+  });
+  const data = await res.json();
+  if (!res.ok || !data.sub) {
+    throw new Error(`Failed to get user info (${res.status}): ${JSON.stringify(data)}`);
+  }
+  return `urn:li:person:${data.sub}`;
+}
+
 // Step 1: Register image upload with LinkedIn
-async function initializeImageUpload(): Promise<{ uploadUrl: string; imageUrn: string }> {
+async function initializeImageUpload(authorUrn: string): Promise<{ uploadUrl: string; imageUrn: string }> {
   const res = await fetch("https://api.linkedin.com/rest/images?action=initializeUpload", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      "Content-Type": "application/json",
-      "LinkedIn-Version": "202401",
-      "X-Restli-Protocol-Version": "2.0.0",
-    },
+    headers: LI_HEADERS,
     body: JSON.stringify({
       initializeUploadRequest: {
-        owner: `urn:li:organization:${ORG_ID}`,
+        owner: authorUrn,
       },
     }),
   });
@@ -44,14 +57,12 @@ async function initializeImageUpload(): Promise<{ uploadUrl: string; imageUrn: s
 
 // Step 2: Upload image binary to LinkedIn
 async function uploadImageBinary(uploadUrl: string, imageUrl: string): Promise<void> {
-  // Download image from Cloudinary
   const imageRes = await fetch(imageUrl);
   if (!imageRes.ok) {
     throw new Error(`Failed to download image from ${imageUrl}`);
   }
   const imageBuffer = await imageRes.arrayBuffer();
 
-  // Upload to LinkedIn
   const res = await fetch(uploadUrl, {
     method: "PUT",
     headers: {
@@ -68,17 +79,12 @@ async function uploadImageBinary(uploadUrl: string, imageUrl: string): Promise<v
 }
 
 // Step 3: Create post with image
-async function createPost(text: string, imageUrn: string): Promise<Record<string, unknown>> {
+async function createPost(authorUrn: string, text: string, imageUrn: string): Promise<Record<string, unknown>> {
   const res = await fetch("https://api.linkedin.com/rest/posts", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      "Content-Type": "application/json",
-      "LinkedIn-Version": "202401",
-      "X-Restli-Protocol-Version": "2.0.0",
-    },
+    headers: LI_HEADERS,
     body: JSON.stringify({
-      author: `urn:li:organization:${ORG_ID}`,
+      author: authorUrn,
       commentary: text,
       visibility: "PUBLIC",
       distribution: {
@@ -102,22 +108,17 @@ async function createPost(text: string, imageUrn: string): Promise<Record<string
     return { published: true, postId };
   }
 
-  const text2 = await res.text();
-  throw new Error(`Create post failed (${res.status}): ${text2}`);
+  const responseText = await res.text();
+  throw new Error(`Create post failed (${res.status}): ${responseText}`);
 }
 
-// Create text-only post (no image)
-async function createTextPost(text: string): Promise<Record<string, unknown>> {
+// Create text-only post
+async function createTextPost(authorUrn: string, text: string): Promise<Record<string, unknown>> {
   const res = await fetch("https://api.linkedin.com/rest/posts", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
-      "Content-Type": "application/json",
-      "LinkedIn-Version": "202401",
-      "X-Restli-Protocol-Version": "2.0.0",
-    },
+    headers: LI_HEADERS,
     body: JSON.stringify({
-      author: `urn:li:organization:${ORG_ID}`,
+      author: authorUrn,
       commentary: text,
       visibility: "PUBLIC",
       distribution: {
@@ -135,8 +136,8 @@ async function createTextPost(text: string): Promise<Record<string, unknown>> {
     return { published: true, postId };
   }
 
-  const text2 = await res.text();
-  throw new Error(`Create post failed (${res.status}): ${text2}`);
+  const responseText = await res.text();
+  throw new Error(`Create post failed (${res.status}): ${responseText}`);
 }
 
 export default async (req: Request, _context: Context) => {
@@ -144,9 +145,9 @@ export default async (req: Request, _context: Context) => {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
-  if (!ACCESS_TOKEN || !ORG_ID) {
+  if (!ACCESS_TOKEN) {
     return Response.json(
-      { error: "LinkedIn API not configured. Set LINKEDIN_ACCESS_TOKEN and LINKEDIN_ORG_ID." },
+      { error: "LinkedIn API not configured. Set LINKEDIN_ACCESS_TOKEN." },
       { status: 500, headers: CORS_HEADERS },
     );
   }
@@ -154,17 +155,13 @@ export default async (req: Request, _context: Context) => {
   // GET = check connection status
   if (req.method === "GET") {
     try {
-      const res = await fetch(`https://api.linkedin.com/rest/organizations/${ORG_ID}`, {
-        headers: {
-          Authorization: `Bearer ${ACCESS_TOKEN}`,
-          "LinkedIn-Version": "202401",
-          "X-Restli-Protocol-Version": "2.0.0",
-        },
+      const res = await fetch("https://api.linkedin.com/v2/userinfo", {
+        headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
       });
       if (res.ok) {
         const data = await res.json();
         return Response.json(
-          { connected: true, org: data.localizedName || ORG_ID },
+          { connected: true, org: data.name || data.email || "LinkedIn" },
           { headers: CORS_HEADERS },
         );
       }
@@ -193,16 +190,17 @@ export default async (req: Request, _context: Context) => {
       );
     }
 
+    // Get the authenticated user's URN
+    const authorUrn = await getPersonUrn();
+
     let result: Record<string, unknown>;
 
     if (imageUrl) {
-      // Image post flow: initialize → upload binary → create post
-      const { uploadUrl, imageUrn } = await initializeImageUpload();
+      const { uploadUrl, imageUrn } = await initializeImageUpload(authorUrn);
       await uploadImageBinary(uploadUrl, imageUrl);
-      result = await createPost(text, imageUrn);
+      result = await createPost(authorUrn, text, imageUrn);
     } else {
-      // Text-only post
-      result = await createTextPost(text);
+      result = await createTextPost(authorUrn, text);
     }
 
     return Response.json(
