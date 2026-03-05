@@ -30,18 +30,12 @@ interface IGErrorResponse {
 async function createMediaContainer(
   imageUrl: string,
   caption: string,
-  scheduledTime?: number
 ): Promise<IGContainerResponse> {
   const params = new URLSearchParams({
     image_url: imageUrl,
     caption: caption,
     access_token: ACCESS_TOKEN!,
   });
-
-  if (scheduledTime) {
-    params.set("published", "false");
-    params.set("scheduled_publish_time", scheduledTime.toString());
-  }
 
   const res = await fetch(`${GRAPH_API}/${IG_USER_ID}/media`, {
     method: "POST",
@@ -158,7 +152,7 @@ export default async (req: Request, _context: Context) => {
 
   try {
     const body = (await req.json()) as PublishRequest;
-    const { action, image_url, caption, scheduled_publish_time } = body;
+    const { image_url, caption } = body;
 
     if (!image_url || !caption) {
       return Response.json(
@@ -167,29 +161,10 @@ export default async (req: Request, _context: Context) => {
       );
     }
 
-    // Create media container
-    const container = await createMediaContainer(
-      image_url,
-      caption,
-      action === "schedule" ? scheduled_publish_time : undefined
-    );
+    // Create media container (always immediate — IG API doesn't support native scheduling)
+    const container = await createMediaContainer(image_url, caption);
 
-    if (action === "schedule" && scheduled_publish_time) {
-      // Scheduled posts — Meta publishes automatically at the specified time
-      return Response.json(
-        {
-          success: true,
-          container_id: container.id,
-          scheduled: true,
-          scheduled_publish_time,
-        },
-        {
-          headers: { "Access-Control-Allow-Origin": "*" },
-        }
-      );
-    }
-
-    // Immediate publish — wait a bit for container to be ready
+    // Wait for container to be ready, then publish
     await new Promise((r) => setTimeout(r, 3000));
 
     const published = await publishMedia(container.id);

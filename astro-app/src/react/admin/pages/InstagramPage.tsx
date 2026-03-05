@@ -342,15 +342,7 @@ export default function CameraPage() {
     );
   }
 
-  function updateSchedule(
-    index: number,
-    field: 'scheduledDate' | 'scheduledTime',
-    value: string
-  ) {
-    setScheduleItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
-    );
-  }
+
 
   function removeItem(index: number) {
     setScheduleItems((prev) => prev.filter((_, i) => i !== index));
@@ -752,42 +744,12 @@ export default function CameraPage() {
                           >
                             Publicar ahora
                           </button>
-                          <div className="flex items-center gap-2 ml-auto">
-                            <input
-                              type="date"
-                              value={item.scheduledDate}
-                              onChange={(e) =>
-                                updateSchedule(index, 'scheduledDate', e.target.value)
-                              }
-                              className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-[#6351d5]"
-                            />
-                            <input
-                              type="time"
-                              value={item.scheduledTime}
-                              onChange={(e) =>
-                                updateSchedule(index, 'scheduledTime', e.target.value)
-                              }
-                              className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-[#6351d5]"
-                            />
-                            <button
-                              onClick={() => publishItem(index, false)}
-                              className="text-xs text-[#6351d5] border border-[#6351d5] px-3 py-1.5 rounded-lg hover:bg-[#6351d5]/10 transition-colors"
-                            >
-                              Programar
-                            </button>
-                          </div>
                         </div>
                       </>
                     )}
 
                     {item.status === 'error' && (
                       <p className="text-xs text-red-500 mt-2">{item.error}</p>
-                    )}
-
-                    {item.status === 'scheduled' && (
-                      <p className="text-xs text-blue-600 mt-2">
-                        Programado para {item.scheduledDate} a las {item.scheduledTime}
-                      </p>
                     )}
 
                     {item.status === 'published' && (
