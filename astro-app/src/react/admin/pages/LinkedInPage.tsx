@@ -15,6 +15,8 @@ import {
   MessageCircle,
   Share2,
   TrendingUp,
+  Calendar,
+  Clock,
 } from 'lucide-react';
 import { getAllPosts } from '../../../lib/firebase-client';
 
@@ -32,8 +34,10 @@ interface QueueItem {
   post: BlogPost;
   caption: string;
   liImageUrl: string;
-  status: 'generating' | 'draft' | 'publishing' | 'published' | 'error';
+  status: 'generating' | 'draft' | 'publishing' | 'published' | 'scheduling' | 'scheduled' | 'error';
   error?: string;
+  scheduledDate: string;
+  scheduledTime: string;
 }
 
 interface LIPost {
@@ -263,11 +267,15 @@ export default function LinkedInPage() {
 
   async function addToQueue(post: BlogPost) {
     // Add to queue immediately with generating status
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
     const newItem: QueueItem = {
       post,
       caption: 'Generando caption con IA...',
       liImageUrl: '',
       status: 'generating',
+      scheduledDate: tomorrow.toISOString().split('T')[0],
+      scheduledTime: '10:00',
     };
 
     setQueue((prev) => [...prev, newItem]);
@@ -344,6 +352,37 @@ export default function LinkedInPage() {
     for (const { i } of drafts) {
       await publishNow(i);
       await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
+
+  async function schedulePost(index: number) {
+    const item = queue[index];
+    if (!item.liImageUrl || !item.caption) return;
+
+    updateItem(index, { status: 'scheduling', error: undefined });
+
+    try {
+      const dateTime = `${item.scheduledDate}T${item.scheduledTime}:00`;
+      const res = await fetch('/.netlify/functions/metricool', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: item.caption,
+          imageUrl: item.liImageUrl,
+          publicationDate: {
+            dateTime,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al programar');
+
+      updateItem(index, { status: 'scheduled' });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error desconocido';
+      updateItem(index, { status: 'error', error: msg });
     }
   }
 
@@ -605,6 +644,16 @@ export default function LinkedInPage() {
                             <Loader2 className="w-3 h-3 animate-spin" /> Publicando...
                           </span>
                         )}
+                        {item.status === 'scheduling' && (
+                          <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Programando...
+                          </span>
+                        )}
+                        {item.status === 'scheduled' && (
+                          <span className="flex items-center gap-1 text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+                            <Calendar className="w-3 h-3" /> Programado
+                          </span>
+                        )}
                         {item.status === 'published' && (
                           <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
                             <CheckCircle2 className="w-3 h-3" /> Publicado
@@ -632,15 +681,47 @@ export default function LinkedInPage() {
                       rows={3}
                     />
 
+                    {/* Schedule controls */}
+                    {item.status === 'draft' && (
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <input
+                            type="date"
+                            value={item.scheduledDate}
+                            onChange={(e) => updateItem(index, { scheduledDate: e.target.value })}
+                            className="text-xs border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#0077B5]"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <input
+                            type="time"
+                            value={item.scheduledTime}
+                            onChange={(e) => updateItem(index, { scheduledTime: e.target.value })}
+                            className="text-xs border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#0077B5]"
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     {/* Actions */}
                     <div className="flex items-center gap-3 mt-2">
                       {item.status === 'draft' && (
-                        <button
-                          onClick={() => publishNow(index)}
-                          className="flex items-center gap-1 px-3 py-1 text-sm bg-[#0077B5] text-white rounded-lg hover:bg-[#005f8d] transition-colors"
-                        >
-                          <Send className="w-3 h-3" /> Publicar en LinkedIn
-                        </button>
+                        <>
+                          <button
+                            onClick={() => publishNow(index)}
+                            className="flex items-center gap-1 px-3 py-1 text-sm bg-[#0077B5] text-white rounded-lg hover:bg-[#005f8d] transition-colors"
+                          >
+                            <Send className="w-3 h-3" /> Publicar ahora
+                          </button>
+                          <button
+                            onClick={() => schedulePost(index)}
+                            className="flex items-center gap-1 px-3 py-1 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                          >
+                            <Calendar className="w-3 h-3" /> Programar
+                          </button>
+                        </>
                       )}
 
                       {item.status === 'error' && (
