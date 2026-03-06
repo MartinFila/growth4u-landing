@@ -71,7 +71,7 @@ const breadcrumbSchema = {
 <BaseLayout
   title={`${caseStudy.company} - ${caseStudy.stat} ${caseStudy.statLabel} | Growth4U`}
   description={caseStudy.summary}
-  ogImage={caseStudy.image || undefined}
+  ogImage={caseStudy.mediaUrl || undefined}
   ogType="article"
   jsonLd={[articleSchema, breadcrumbSchema]}
 >
