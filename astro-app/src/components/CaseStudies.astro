@@ -3,6 +3,7 @@ import { createSlug } from '../lib/firebase-fetch';
 
 interface CaseItem {
   company: string;
+  logo?: string;
   stat: string;
   label: string;
   highlight: string;
@@ -61,12 +62,16 @@ const caseIconSvgs = [
             <div class="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
               <!-- Company -->
               <div class="flex items-center gap-2.5 mb-5">
-                <div
-                  class="w-8 h-8 rounded-lg flex items-center justify-center"
-                  style={`background-color: ${color}12; color: ${color};`}
-                >
-                  <Fragment set:html={caseIconSvgs[i]} />
-                </div>
+                {item.logo ? (
+                  <img src={item.logo} alt={item.company} class="h-6 w-auto object-contain" />
+                ) : (
+                  <div
+                    class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={`background-color: ${color}12; color: ${color};`}
+                  >
+                    <Fragment set:html={caseIconSvgs[i]} />
+                  </div>
+                )}
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">
                   {item.company}
                 </span>
