@@ -2,7 +2,7 @@ export const SITE_URL = 'https://growth4u.io';
 export const SITE_NAME = 'Growth4U';
 export const SITE_DESCRIPTION = 'Especialistas en Growth para Empresas Tech. Te ayudamos a crear un motor de crecimiento que perdura en el tiempo y reduce tu CAC apoyándonos en el valor de la confianza.';
 
-export const BOOKING_LINK = 'https://now.growth4u.io/widget/bookings/growth4u_demo';
+export const BOOKING_LINK = 'https://api.leadconnectorhq.com/widget/booking/XsVb9H5fZjGeVArLn2EN';
 
 export const OG_IMAGE = 'https://i.imgur.com/imHxGWI.png';
 export const FAVICON = 'https://i.imgur.com/h5sWS3W.png';
@@ -21,7 +21,7 @@ export const CLOUDINARY_CLOUD_NAME = 'dsc0jsbkz';
 export const CLOUDINARY_UPLOAD_PRESET = 'blog_uploads';
 
 // Netlify
-export const NETLIFY_BUILD_HOOK = 'https://api.netlify.com/build_hooks/69738cc3fc679a8f858929cd';
+export const NETLIFY_BUILD_HOOK = 'https://api.netlify.com/build_hooks/69a9ce0e98ff45fea8db5696';
 
 // Brand colors
 export const COLORS = {

@@ -23,7 +23,7 @@ import {
 import { getAllPosts, createPost, updatePost, deletePost, createSlug } from '../../../lib/firebase-client';
 import type { BlogPost, BlogPostInput } from '../../../lib/firebase-client';
 
-const NETLIFY_BUILD_HOOK = 'https://api.netlify.com/build_hooks/69738cc3fc679a8f858929cd';
+const NETLIFY_BUILD_HOOK = 'https://api.netlify.com/build_hooks/69a9ce0e98ff45fea8db5696';
 const CLOUDINARY_CLOUD_NAME = 'dsc0jsbkz';
 const CLOUDINARY_UPLOAD_PRESET = 'blog_uploads';
 
@@ -263,7 +263,7 @@ export default function BlogAdminPage() {
 
 ---
 
-*¿Quieres implementar esta estrategia en tu empresa tech? [Agenda una llamada gratuita con Growth4U](https://now.growth4u.io/widget/bookings/growth4u_demo) y te ayudamos a diseñar tu motor de crecimiento.*`;
+*¿Quieres implementar esta estrategia en tu empresa tech? [Agenda una llamada gratuita con Growth4U](https://api.leadconnectorhq.com/widget/booking/XsVb9H5fZjGeVArLn2EN) y te ayudamos a diseñar tu motor de crecimiento.*`;
 
   const applyGeoTemplate = () => {
     if (formData.content && !confirm('¿Reemplazar el contenido actual con la plantilla GEO?')) return;

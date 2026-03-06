@@ -19,7 +19,7 @@ import {
 import { getAllCaseStudies, createCaseStudy, updateCaseStudy, deleteCaseStudy, createSlug } from '../../../lib/firebase-client';
 import type { CaseStudy, CaseStudyInput } from '../../../lib/firebase-client';
 
-const NETLIFY_BUILD_HOOK = 'https://api.netlify.com/build_hooks/69738cc3fc679a8f858929cd';
+const NETLIFY_BUILD_HOOK = 'https://api.netlify.com/build_hooks/69a9ce0e98ff45fea8db5696';
 const CLOUDINARY_CLOUD_NAME = 'dsc0jsbkz';
 const CLOUDINARY_UPLOAD_PRESET = 'blog_uploads';
 
