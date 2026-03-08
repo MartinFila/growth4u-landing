@@ -133,11 +133,36 @@ interface FirestoreDoc {
   fields: Record<string, { stringValue?: string; timestampValue?: string }>;
 }
 
+async function checkContainerStatus(containerId: string): Promise<string> {
+  const res = await fetch(
+    `${GRAPH_API}/${containerId}?fields=status_code&access_token=${ACCESS_TOKEN}`
+  );
+  const data = await res.json();
+  return data.status_code || "UNKNOWN";
+}
+
+async function waitForContainer(containerId: string, maxAttempts = 10): Promise<void> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const status = await checkContainerStatus(containerId);
+    if (status === "FINISHED") return;
+    if (status === "ERROR") throw new Error("Container processing failed on Instagram side");
+    // Wait 3s between checks
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  throw new Error("Container not ready after 30s — timed out");
+}
+
 async function processScheduledPosts() {
+  const errors: Array<{ id: string; error: string }> = [];
+
   // Read all pending scheduled posts
   const res = await fetch(`${FIRESTORE_BASE}/${IG_COLLECTION}?pageSize=100`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Firestore read failed (${res.status}): ${text}`);
+  }
   const data = await res.json();
-  if (!data.documents) return { processed: 0, message: "No documents" };
+  if (!data.documents) return { processed: 0, total_due: 0, errors, message: "No documents in collection" };
 
   const now = new Date();
   const pending = (data.documents as FirestoreDoc[])
@@ -153,30 +178,49 @@ async function processScheduledPosts() {
     })
     .filter((p) => p.status === "pending" && p.scheduledAt <= now);
 
+  if (pending.length === 0) {
+    return { processed: 0, total_due: 0, errors, message: "No posts due" };
+  }
+
   let published = 0;
   for (const post of pending) {
     try {
+      console.log(`[IG Cron] Publishing post ${post.id} — scheduled ${post.scheduledAt.toISOString()}`);
+
       // Mark as publishing
       await patchFirestoreDoc(post.id, { status: "publishing" });
 
       // Publish to Instagram
       const container = await createMediaContainer(post.imageUrl, post.caption);
-      await new Promise((r) => setTimeout(r, 3000));
-      const result = await publishMedia(container.id);
+      console.log(`[IG Cron] Container created: ${container.id}`);
 
-      // Mark as published
-      await patchFirestoreDoc(post.id, { status: "published", mediaId: result.id });
+      // Poll container status instead of blind wait
+      await waitForContainer(container.id);
+
+      const result = await publishMedia(container.id);
+      console.log(`[IG Cron] Published! Media ID: ${result.id}`);
+
+      // Mark as published with timestamp
+      await patchFirestoreDoc(post.id, {
+        status: "published",
+        mediaId: result.id,
+        publishedAt: new Date().toISOString(),
+      });
       published++;
 
-      // Rate limit
-      await new Promise((r) => setTimeout(r, 5000));
+      // Rate limit between posts
+      if (pending.indexOf(post) < pending.length - 1) {
+        await new Promise((r) => setTimeout(r, 5000));
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Unknown error";
+      console.error(`[IG Cron] FAILED post ${post.id}: ${msg}`);
+      errors.push({ id: post.id, error: msg });
       await patchFirestoreDoc(post.id, { status: "error", error: msg });
     }
   }
 
-  return { processed: published, total_due: pending.length };
+  return { processed: published, total_due: pending.length, errors };
 }
 
 async function patchFirestoreDoc(docId: string, fields: Record<string, string>) {
@@ -188,11 +232,16 @@ async function patchFirestoreDoc(docId: string, fields: Record<string, string>) 
     firestoreFields[k] = { stringValue: v };
   }
 
-  await fetch(url, {
+  const res = await fetch(url, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ fields: firestoreFields }),
   });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`[IG Cron] Firestore PATCH failed for ${docId} (${res.status}): ${text}`);
+  }
 }
 
 export default async (req: Request, _context: Context) => {
@@ -201,17 +250,57 @@ export default async (req: Request, _context: Context) => {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
 
-  if (!IG_USER_ID || !ACCESS_TOKEN) {
-    return Response.json(
-      { error: "Instagram API not configured" },
-      { status: 500, headers: CORS_HEADERS }
-    );
-  }
-
-  // GET = fetch metrics OR run cron
+  // GET = fetch metrics, run cron, or check status
   if (req.method === "GET") {
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
+
+    // Status: check config + pending posts (always available, even without env vars)
+    if (action === "status") {
+      const configOk = !!(IG_USER_ID && ACCESS_TOKEN);
+      let tokenValid = false;
+      let tokenError = "";
+      if (configOk) {
+        try {
+          const check = await fetch(
+            `${GRAPH_API}/${IG_USER_ID}?fields=username&access_token=${ACCESS_TOKEN}`
+          );
+          const checkData = await check.json();
+          tokenValid = check.ok;
+          if (!check.ok) tokenError = checkData.error?.message || "Token invalid";
+        } catch (e: unknown) {
+          tokenError = e instanceof Error ? e.message : "Fetch failed";
+        }
+      }
+
+      let pendingCount = 0;
+      let errorCount = 0;
+      try {
+        const fsRes = await fetch(`${FIRESTORE_BASE}/${IG_COLLECTION}?pageSize=100`);
+        const fsData = await fsRes.json();
+        if (fsData.documents) {
+          for (const doc of fsData.documents as FirestoreDoc[]) {
+            const status = doc.fields.status?.stringValue;
+            if (status === "pending") pendingCount++;
+            if (status === "error") errorCount++;
+          }
+        }
+      } catch { /* ignore */ }
+
+      return Response.json({
+        config: configOk ? "ok" : "MISSING env vars (META_IG_USER_ID / META_IG_ACCESS_TOKEN)",
+        token: configOk ? (tokenValid ? "valid" : `INVALID — ${tokenError}`) : "not checked",
+        pending_posts: pendingCount,
+        error_posts: errorCount,
+      }, { headers: CORS_HEADERS });
+    }
+
+    if (!IG_USER_ID || !ACCESS_TOKEN) {
+      return Response.json(
+        { error: "Instagram API not configured — set META_IG_USER_ID and META_IG_ACCESS_TOKEN in Netlify env vars" },
+        { status: 500, headers: CORS_HEADERS }
+      );
+    }
 
     // Cron: publish scheduled posts that are due
     if (action === "cron") {
@@ -238,6 +327,13 @@ export default async (req: Request, _context: Context) => {
     return Response.json({ error: "Method not allowed" }, { status: 405, headers: CORS_HEADERS });
   }
 
+  if (!IG_USER_ID || !ACCESS_TOKEN) {
+    return Response.json(
+      { error: "Instagram API not configured" },
+      { status: 500, headers: CORS_HEADERS }
+    );
+  }
+
   try {
     const body = (await req.json()) as PublishRequest;
     const { image_url, caption } = body;
@@ -252,8 +348,8 @@ export default async (req: Request, _context: Context) => {
     // Create media container (always immediate — IG API doesn't support native scheduling)
     const container = await createMediaContainer(image_url, caption);
 
-    // Wait for container to be ready, then publish
-    await new Promise((r) => setTimeout(r, 3000));
+    // Poll until container is ready
+    await waitForContainer(container.id);
 
     const published = await publishMedia(container.id);
 
