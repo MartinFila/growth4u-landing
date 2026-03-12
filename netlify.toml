@@ -7,6 +7,10 @@
 [functions]
   node_bundler = "esbuild"
 
+[functions."trust-score-analyze"]
+  external_node_modules = ["@anthropic-ai/sdk"]
+  timeout = 300
+
 # Redirects from old query parameter URLs to new clean URLs
 [[redirects]]
   from = "/blog"
