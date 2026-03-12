@@ -89,7 +89,7 @@ export default async (req: Request, context: Context) => {
       </p>
 
       <div style="text-align:center;">
-        <a href="${calendarUrl}" style="display:inline-block;background:#0F1B2D;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:600;">
+        <a href="${calendarUrl}" style="display:inline-block;background:#032149;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:600;">
           Agendar sesión gratuita
         </a>
       </div>
