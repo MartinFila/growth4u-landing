@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { marked } from 'marked';
 import { saveLeadMagnetLead } from '../lib/firebase-client';
 
@@ -6,23 +6,16 @@ interface Props {
   magnetSlug: string;
   magnetTitle: string;
   excerpt: string;        // Markdown — visible before gate
-  fullContent: string;    // HTML — shown after unlock
+  fullContent: string;    // HTML — kept for SEO but NOT shown inline
 }
 
 export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt, fullContent }: Props) {
-  const [unlocked, setUnlocked] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [sentEmail, setSentEmail] = useState('');
   const [formData, setFormData] = useState({ nombre: '', email: '', empresa: '' });
   const [error, setError] = useState('');
-
-  const storageKey = `lm_${magnetSlug}_unlocked`;
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem(storageKey)) {
-      setUnlocked(true);
-    }
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +26,7 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
     setError('');
     setSubmitting(true);
     try {
+      // Save to Firebase (existing flow)
       await saveLeadMagnetLead({
         nombre: formData.nombre.trim(),
         email: formData.email.trim(),
@@ -40,13 +34,32 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
         magnetSlug,
         magnetTitle,
       });
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(storageKey, '1');
-      }
-      setUnlocked(true);
+
+      // Send email via GHL (new flow)
+      const contentUrl = `${window.location.origin}/recursos/${magnetSlug}/?token=${encodeURIComponent(btoa(formData.email.trim().toLowerCase()))}`;
+      const resp = await fetch('/.netlify/functions/lead-magnet-gate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: formData.nombre.trim(),
+          email: formData.email.trim(),
+          empresa: formData.empresa.trim(),
+          magnetSlug,
+          magnetTitle,
+          contentUrl,
+        }),
+      });
+      const data = await resp.json();
+
+      setSentEmail(formData.email.trim());
+      setEmailSent(true);
       setShowForm(false);
+
+      if (!data.emailSent) {
+        setError('Tu solicitud se registró pero hubo un problema enviando el email. Contacta con hola@growth4u.io');
+      }
     } catch (err) {
-      console.error('Error saving lead:', err);
+      console.error('Error:', err);
       setError('Hubo un problema. Por favor, inténtalo de nuevo.');
     } finally {
       setSubmitting(false);
@@ -55,27 +68,72 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
 
   const excerptHtml = marked.parse(excerpt || '', { gfm: true }) as string;
 
-  if (unlocked) {
+  // Check if user arrived via email token — unlock content
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      try {
+        const decoded = atob(token);
+        if (decoded.includes('@')) {
+          // Valid token — show full content by setting localStorage and reloading without token
+          localStorage.setItem(`lm_${magnetSlug}_unlocked`, '1');
+          window.history.replaceState({}, '', window.location.pathname);
+          // Return unlocked view below
+        }
+      } catch { /* invalid token */ }
+    }
+
+    // If localStorage says unlocked, show content
+    if (localStorage.getItem(`lm_${magnetSlug}_unlocked`)) {
+      return (
+        <div>
+          <div className="mb-6 flex items-center gap-2 text-green-600 text-sm font-medium">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            Acceso desbloqueado. Aquí tienes el contenido completo.
+          </div>
+          <div className="prose prose-lg mx-auto" dangerouslySetInnerHTML={{ __html: fullContent }} />
+          <div className="mt-16 bg-[#032149] rounded-2xl p-8 text-center">
+            <p className="text-white/70 text-sm font-medium uppercase tracking-wider mb-3">¿Quieres implementarlo en tu empresa?</p>
+            <h3 className="text-2xl font-bold text-white mb-4">Hablamos 30 minutos y te digo dónde está tu mayor oportunidad</h3>
+            <a
+              href="https://api.leadconnectorhq.com/widget/booking/XsVb9H5fZjGeVArLn2EN"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-[#6351d5] hover:bg-[#5242b8] text-white font-bold py-4 px-8 rounded-full text-lg transition-all hover:scale-105 shadow-lg shadow-[#6351d5]/30"
+            >
+              Agendar llamada →
+            </a>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // Email sent confirmation
+  if (emailSent) {
     return (
       <div>
-        <div className="mb-6 flex items-center gap-2 text-green-600 text-sm font-medium">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
-          </svg>
-          ¡Acceso desbloqueado! Aquí tienes el contenido completo.
+        <div className="prose prose-lg mx-auto">
+          <div dangerouslySetInnerHTML={{ __html: excerptHtml }} />
         </div>
-        <div dangerouslySetInnerHTML={{ __html: fullContent }} />
-        <div className="mt-16 bg-[#032149] rounded-2xl p-8 text-center">
-          <p className="text-white/70 text-sm font-medium uppercase tracking-wider mb-3">¿Quieres implementarlo en tu empresa?</p>
-          <h3 className="text-2xl font-bold text-white mb-4">Hablamos 30 minutos y te digo dónde está tu mayor oportunidad</h3>
-          <a
-            href="https://api.leadconnectorhq.com/widget/booking/XsVb9H5fZjGeVArLn2EN"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-[#6351d5] hover:bg-[#5242b8] text-white font-bold py-4 px-8 rounded-full text-lg transition-all hover:scale-105 shadow-lg shadow-[#6351d5]/30"
-          >
-            Agendar llamada →
-          </a>
+        <div className="mt-8 max-w-md mx-auto text-center">
+          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-lg">
+            <div className="w-16 h-16 bg-[#6351d5]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-3xl">📬</span>
+            </div>
+            <h3 className="text-xl font-bold text-[#032149] mb-2">¡Revisa tu email!</h3>
+            <p className="text-slate-500 text-sm mb-2">
+              Te hemos enviado el contenido completo a:
+            </p>
+            <p className="text-[#6351d5] font-semibold mb-4">{sentEmail}</p>
+            <p className="text-slate-400 text-xs">
+              Revisa tu bandeja de entrada (y spam, por si acaso).
+            </p>
+            {error && <p className="text-red-500 text-xs mt-3">{error}</p>}
+          </div>
         </div>
       </div>
     );
@@ -99,7 +157,7 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
               </svg>
             </div>
             <h3 className="text-xl font-bold text-[#032149] mb-2">Accede al contenido completo</h3>
-            <p className="text-slate-400 text-sm mb-6">Gratis. Sin spam. Acceso inmediato.</p>
+            <p className="text-slate-400 text-sm mb-6">Gratis. Sin spam. Te lo enviamos a tu email.</p>
             <button
               onClick={() => setShowForm(true)}
               className="bg-[#6351d5] hover:bg-[#5242b8] text-white font-bold py-4 px-10 rounded-full text-lg transition-all duration-200 hover:scale-105 shadow-lg shadow-[#6351d5]/20"
@@ -112,7 +170,7 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
         <div className="mt-8 max-w-md mx-auto">
           <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-lg">
             <h3 className="text-xl font-bold text-[#032149] mb-1">Déjanos tus datos</h3>
-            <p className="text-slate-500 text-sm mb-6">Acceso inmediato al contenido completo.</p>
+            <p className="text-slate-500 text-sm mb-6">Te enviamos el contenido completo a tu email.</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -122,7 +180,8 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                   placeholder="María García"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6351d5] focus:border-transparent"
+                  disabled={submitting}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6351d5] focus:border-transparent disabled:opacity-50"
                   required
                 />
               </div>
@@ -133,7 +192,8 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="maria@tuempresa.com"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6351d5] focus:border-transparent"
+                  disabled={submitting}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6351d5] focus:border-transparent disabled:opacity-50"
                   required
                 />
               </div>
@@ -144,7 +204,8 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
                   value={formData.empresa}
                   onChange={(e) => setFormData({ ...formData, empresa: e.target.value })}
                   placeholder="Nombre de tu empresa tech"
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6351d5] focus:border-transparent"
+                  disabled={submitting}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6351d5] focus:border-transparent disabled:opacity-50"
                 />
               </div>
 
@@ -154,7 +215,8 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 py-3 border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium rounded-xl transition-colors"
+                  disabled={submitting}
+                  className="flex-1 py-3 border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium rounded-xl transition-colors disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -163,7 +225,7 @@ export default function StaticLeadMagnetGate({ magnetSlug, magnetTitle, excerpt,
                   disabled={submitting}
                   className="flex-[2] py-3 bg-[#6351d5] hover:bg-[#5242b8] disabled:bg-slate-300 text-white font-bold rounded-xl transition-all"
                 >
-                  {submitting ? 'Enviando...' : 'Acceder →'}
+                  {submitting ? 'Enviando...' : 'Recibir por email →'}
                 </button>
               </div>
               <p className="text-slate-400 text-xs text-center">Sin spam. Puedes darte de baja cuando quieras.</p>
