@@ -1017,12 +1017,19 @@ export default async (req: Request, context: Context) => {
         const founderStr = founderName ? `\n\n## Founder/CEO: ${founderName}\n${JSON.stringify(socialPresence["Founder LinkedIn"] || { found: false })}` : "";
         const sectorInfoStr = `Sector: ${sectorInfo.sector} | Mercado: ${sectorInfo.region} | ICP: ${sectorInfo.icp} | Categoría: ${sectorInfo.category_search_query}`;
         const competitorStr = competitorData ? `\n\n## Datos del competidor principal: ${competitorData.name}\n${JSON.stringify(competitorData)}` : "";
-        const prompt = buildPrompt(fullUrl, brandName, content, JSON.stringify(serpData), JSON.stringify(geoData), JSON.stringify(socialPresence), sectorInfoStr + founderStr + competitorStr, JSON.stringify(seoData));
+        // Trim data to keep prompt under ~8k tokens
+        const trimmedContent = content.slice(0, 4000);
+        const trimmedSerp = JSON.stringify(serpData).slice(0, 4000);
+        const trimmedGeo = JSON.stringify(geoData).slice(0, 2000);
+        const trimmedSocial = JSON.stringify(socialPresence).slice(0, 2000);
+        const trimmedSeo = JSON.stringify(seoData).slice(0, 2000);
+        const prompt = buildPrompt(fullUrl, brandName, trimmedContent, trimmedSerp, trimmedGeo, trimmedSocial, sectorInfoStr + founderStr + competitorStr, trimmedSeo);
+        stream(encoder, controller, "detail", { message: `  Prompt: ~${Math.round(prompt.length / 4)} tokens` });
         const analysisResp = await withHeartbeat(encoder, controller, () => anthropic.messages.create({
           model: "claude-sonnet-4-20250514",
           max_tokens: 3000,
           messages: [{ role: "user", content: prompt }],
-        }));
+        }, { timeout: 120_000 }));
 
         const rawAnalysis = extractJson(extractText(analysisResp.content));
 
