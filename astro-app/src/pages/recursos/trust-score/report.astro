@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import TrustScoreReport from '../../../react/TrustScoreReport';
+import { SITE_URL } from '../../../lib/constants';
+
+const title = 'Tu Trust Score Report';
+const description = 'Reporte detallado de confianza digital: 6 pilares, comparación con competidores y recomendaciones personalizadas.';
+---
+
+<BaseLayout
+  title={`${title} | Growth4U`}
+  description={description}
+  canonical={`${SITE_URL}/recursos/trust-score/report`}
+>
+  <main class="min-h-screen bg-gray-50">
+    <TrustScoreReport client:only="react" />
+  </main>
+</BaseLayout>

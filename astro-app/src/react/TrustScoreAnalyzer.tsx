@@ -191,7 +191,8 @@ export default function TrustScoreAnalyzer() {
       console.warn("Lead capture failed:", err);
     }
 
-    // 2. Send report email
+    // 2. Send report email via GHL
+    let emailSent = false;
     try {
       const emailResp = await fetch("/.netlify/functions/trust-score-send-report", {
         method: "POST",
@@ -199,17 +200,22 @@ export default function TrustScoreAnalyzer() {
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
+          phone: phone.trim(),
           result,
           origin: window.location.origin,
         }),
       });
-      await emailResp.json();
+      const emailData = await emailResp.json();
+      emailSent = emailData.emailSent === true;
     } catch (err) {
       console.warn("Send report email failed:", err);
     }
 
     setSendingEmail(false);
     setUnlocked(true);
+    if (!emailSent) {
+      setUnlockError("El reporte se desbloqueó pero hubo un problema enviando el email. Puedes verlo aquí mismo.");
+    }
   }
 
   // ─── Limit reached ───

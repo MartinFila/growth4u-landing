@@ -7,6 +7,8 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
+const GHL_LOCATION_ID = "BnXWP5dcLVMgUudLv10O";
+
 function jsonResponse(data: object, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -14,11 +16,57 @@ function jsonResponse(data: object, status = 200) {
   });
 }
 
+async function findOrCreateGhlContact(
+  apiKey: string,
+  email: string,
+  name: string,
+  phone?: string,
+  url?: string,
+): Promise<string | null> {
+  // Search existing contact
+  const searchResp = await fetch(
+    `https://services.leadconnectorhq.com/contacts/?locationId=${GHL_LOCATION_ID}&query=${encodeURIComponent(email)}`,
+    {
+      headers: { Authorization: `Bearer ${apiKey}`, Version: "2021-07-28" },
+      signal: AbortSignal.timeout(8_000),
+    },
+  );
+  const searchData = await searchResp.json();
+  const existing = (searchData?.contacts || []).find(
+    (c: { email?: string }) => c.email?.toLowerCase() === email.toLowerCase(),
+  );
+  if (existing) return existing.id;
+
+  // Create new contact
+  const nameParts = name.trim().split(/\s+/);
+  const createResp = await fetch("https://services.leadconnectorhq.com/contacts/", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      Version: "2021-07-28",
+    },
+    body: JSON.stringify({
+      locationId: GHL_LOCATION_ID,
+      firstName: nameParts[0] || "",
+      lastName: nameParts.slice(1).join(" ") || "",
+      email,
+      phone: phone || undefined,
+      website: url || undefined,
+      tags: ["trust-score"],
+      source: "Trust Score Analyzer",
+    }),
+    signal: AbortSignal.timeout(8_000),
+  });
+  const createData = await createResp.json();
+  return createData?.contact?.id || null;
+}
+
 export default async (req: Request, context: Context) => {
   if (req.method === "OPTIONS") return new Response("", { headers: CORS_HEADERS });
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: CORS_HEADERS });
 
-  const { name, email, result, origin } = await req.json();
+  const { name, email, phone, result, origin } = await req.json();
 
   if (!email || !result || !origin) {
     return jsonResponse({ error: "Missing fields" }, 400);
@@ -28,12 +76,9 @@ export default async (req: Request, context: Context) => {
   const compressed = deflateSync(Buffer.from(JSON.stringify(result))).toString("base64url");
   const reportUrl = `${origin}/recursos/trust-score/report?d=${compressed}`;
 
-  // Send email via Mailgun
-  const mgKey = process.env.MAILGUN_API_KEY;
-  const mgDomain = process.env.MAILGUN_DOMAIN || "email.growth4u.io";
-
-  if (!mgKey) {
-    console.error("MAILGUN_API_KEY not set — cannot send email");
+  const ghlApiKey = process.env.GHL_API_KEY;
+  if (!ghlApiKey) {
+    console.error("GHL_API_KEY not set — cannot send email");
     return jsonResponse({ ok: false, error: "Email not configured", reportUrl, emailSent: false });
   }
 
@@ -106,30 +151,42 @@ export default async (req: Request, context: Context) => {
 </html>`.trim();
 
   try {
-    const form = new URLSearchParams();
-    form.append("from", "Growth4U Trust Score <trust@" + mgDomain + ">");
-    form.append("to", email);
-    form.append("subject", `${firstName}, tu Trust Score está listo — ${companyName}`);
-    form.append("html", htmlBody);
-
-    const resp = await fetch(`https://api.mailgun.net/v3/${mgDomain}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: "Basic " + Buffer.from("api:" + mgKey).toString("base64"),
-      },
-      body: form,
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    if (!resp.ok) {
-      const text = await resp.text();
-      console.warn("Mailgun error:", resp.status, text);
-      return jsonResponse({ ok: true, reportUrl, emailSent: false, mailgunError: `${resp.status}: ${text}` });
+    // 1. Find or create contact in GHL
+    const contactId = await findOrCreateGhlContact(ghlApiKey, email.trim(), name || "", phone, result.company_name);
+    if (!contactId) {
+      console.error("Could not find/create GHL contact for:", email);
+      return jsonResponse({ ok: true, reportUrl, emailSent: false, error: "Contact not found" });
     }
 
+    // 2. Send email via GHL Conversations API
+    const emailResp = await fetch("https://services.leadconnectorhq.com/conversations/messages", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${ghlApiKey}`,
+        "Content-Type": "application/json",
+        Version: "2021-07-28",
+      },
+      body: JSON.stringify({
+        type: "Email",
+        contactId,
+        subject: `${firstName}, tu Trust Score está listo — ${companyName}`,
+        html: htmlBody,
+        emailFrom: "Growth4U <accounts@growth4u.io>",
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!emailResp.ok) {
+      const text = await emailResp.text();
+      console.warn("GHL email error:", emailResp.status, text);
+      return jsonResponse({ ok: true, reportUrl, emailSent: false, ghlError: `${emailResp.status}: ${text}` });
+    }
+
+    const emailData = await emailResp.json();
+    console.log("GHL email sent:", emailData.messageId, "to:", email);
     return jsonResponse({ ok: true, reportUrl, emailSent: true });
   } catch (err) {
-    console.warn("Mailgun request failed:", err);
-    return jsonResponse({ ok: true, reportUrl, emailSent: false, mailgunError: String(err) });
+    console.warn("GHL email failed:", err);
+    return jsonResponse({ ok: true, reportUrl, emailSent: false, ghlError: String(err) });
   }
 };
