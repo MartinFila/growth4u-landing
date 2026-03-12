@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { GA4_ID, TRUSTPILOT_BU_ID, SITE_NAME, SITE_URL, SITE_DESCRIPTION, OG_IMAGE, FAVICON, LINKEDIN_URL } from '../lib/constants';
+import CookieBanner from '../react/CookieBanner';
 
 interface Props {
   title?: string;
@@ -104,6 +105,9 @@ const organizationSchema = {
   </head>
   <body class="antialiased">
     <slot />
+
+    <!-- Cookie Banner (consent-based Meta Pixel) -->
+    <CookieBanner client:idle />
 
     <!-- Google Analytics 4 (deferred to after content) -->
     <script is:inline src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} async></script>

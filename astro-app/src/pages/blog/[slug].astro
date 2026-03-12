@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import CookieBanner from '../../react/CookieBanner';
+
 import NewsletterCTA from '../../react/NewsletterCTA';
 import RelatedPosts from '../../components/RelatedPosts.astro';
 import ServiceBanner from '../../components/ServiceBanner.astro';
@@ -88,8 +88,6 @@ const featuredMagnet = LEAD_MAGNETS[lmIndex];
   ogType="article"
   jsonLd={[articleSchema, breadcrumbSchema]}
 >
-  <CookieBanner client:idle />
-
   <!-- Blog Post Nav -->
   <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
     <div class="max-w-4xl mx-auto px-4 h-20 flex items-center justify-between">

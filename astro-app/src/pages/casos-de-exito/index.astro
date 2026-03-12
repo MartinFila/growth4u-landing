@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Footer from '../../components/Footer.astro';
-import CookieBanner from '../../react/CookieBanner';
+
 import { getTranslations } from '../../i18n/utils';
 import { getAllCaseStudies } from '../../lib/firebase-fetch';
 import { BOOKING_LINK } from '../../lib/constants';
@@ -20,8 +20,6 @@ try {
   title="Casos de Éxito | Growth4U"
   description="Resultados auditados de Growth Marketing para Empresas Tech B2B y B2C. Descubre cómo ayudamos a nuestros clientes a escalar."
 >
-  <CookieBanner client:idle />
-
   <!-- Floating Nav -->
   <div class="fixed top-6 inset-x-0 z-50 flex justify-center px-4">
     <nav class="nav-island w-full max-w-6xl">

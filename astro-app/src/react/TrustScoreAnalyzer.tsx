@@ -211,6 +211,11 @@ export default function TrustScoreAnalyzer() {
       console.warn("Send report email failed:", err);
     }
 
+    // Track Meta Pixel Lead event
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Lead', { content_name: 'Trust Score', content_category: 'trust-score' });
+    }
+
     setSendingEmail(false);
     setUnlocked(true);
     if (!emailSent) {

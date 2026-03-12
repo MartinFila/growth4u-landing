@@ -11,7 +11,7 @@ import TrustScoreSection from '../components/TrustScoreSection.astro';
 import RecursosSection from '../components/RecursosSection.astro';
 import BlogPreviewSection from '../components/BlogPreviewSection.astro';
 import Footer from '../components/Footer.astro';
-import CookieBanner from '../react/CookieBanner';
+
 import { getTranslations } from '../i18n/utils';
 import { getAllPosts } from '../lib/firebase-fetch';
 import { BOOKING_LINK, SITE_URL } from '../lib/constants';
@@ -131,5 +131,4 @@ const faqSchema = {
   <RecursosSection t={t} />
   <BlogPreviewSection t={t} posts={posts} />
   <Footer t={t} bookingLink={BOOKING_LINK} />
-  <CookieBanner client:idle />
 </BaseLayout>

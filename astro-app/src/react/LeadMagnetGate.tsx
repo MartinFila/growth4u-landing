@@ -94,6 +94,11 @@ export default function LeadMagnetGate({ magnetId, magnetSlug, magnetTitle, exce
       });
       const data = await resp.json();
 
+      // Track Meta Pixel Lead event
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Lead', { content_name: magnetTitle, content_category: 'lead-magnet' });
+      }
+
       setSentEmail(formData.email.trim());
       setEmailSent(true);
       setShowForm(false);

@@ -25,6 +25,10 @@ export default function NewsletterCTA() {
         magnetSlug: 'newsletter',
         magnetTitle: 'Newsletter Growth4U',
       });
+      // Track Meta Pixel Lead event
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Lead', { content_name: 'Newsletter', content_category: 'newsletter' });
+      }
       setStep('done');
     } catch (err) {
       console.error('Error saving newsletter lead:', err);

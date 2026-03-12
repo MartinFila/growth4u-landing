@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Navbar from '../../components/Navbar.astro';
 import Footer from '../../components/Footer.astro';
-import CookieBanner from '../../react/CookieBanner';
+
 import { getTranslations } from '../../i18n/utils';
 import { BOOKING_LINK, SITE_URL } from '../../lib/constants';
 
@@ -48,8 +48,6 @@ const services = [
   jsonLd={[breadcrumbSchema]}
 >
   <Navbar t={t} lang="es" bookingLink={BOOKING_LINK} />
-  <CookieBanner client:idle />
-
   <section class="pt-44 pb-20 bg-white">
     <div class="max-w-5xl mx-auto px-4 text-center">
       <span class="inline-block px-4 py-2 rounded-full bg-[#6351d5]/10 text-[#6351d5] font-bold text-sm mb-6">

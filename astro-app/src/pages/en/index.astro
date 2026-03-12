@@ -9,7 +9,7 @@ import CaseStudies from '../../components/CaseStudies.astro';
 import TeamSection from '../../components/TeamSection.astro';
 import BlogPreviewSection from '../../components/BlogPreviewSection.astro';
 import Footer from '../../components/Footer.astro';
-import CookieBanner from '../../react/CookieBanner';
+
 import { getTranslations } from '../../i18n/utils';
 import { getAllPosts } from '../../lib/firebase-fetch';
 import { BOOKING_LINK, SITE_URL } from '../../lib/constants';
@@ -53,5 +53,4 @@ const professionalServiceSchema = {
   <TeamSection t={t} />
   <BlogPreviewSection t={t} posts={posts} />
   <Footer t={t} bookingLink={BOOKING_LINK} />
-  <CookieBanner client:idle />
 </BaseLayout>

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Footer from '../../components/Footer.astro';
-import CookieBanner from '../../react/CookieBanner';
+
 import { getTranslations } from '../../i18n/utils';
 import { getAllPosts } from '../../lib/firebase-fetch';
 import { BOOKING_LINK } from '../../lib/constants';
@@ -71,8 +71,6 @@ function formatDate(dateStr: string) {
   title="Blog | Growth4U"
   description="Guías y estrategias de Growth para Fintech en España: growth hacking, outreach B2B, influencer marketing, unit economics, GEO y más."
 >
-  <CookieBanner client:idle />
-
   <!-- Floating Nav -->
   <div class="fixed top-6 inset-x-0 z-50 flex justify-center px-4">
     <nav class="nav-island w-full max-w-6xl">

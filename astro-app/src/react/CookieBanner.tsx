@@ -3,6 +3,29 @@
 import { useState, useEffect } from 'react';
 import { META_PIXEL_ID } from '../lib/constants';
 
+function initMetaPixel() {
+  if (typeof window === 'undefined' || window.fbq) return;
+  (function (f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
+    if (f.fbq) return;
+    n = f.fbq = function () {
+      n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+    };
+    if (!f._fbq) f._fbq = n;
+    n.push = n;
+    n.loaded = !0;
+    n.version = '2.0';
+    n.queue = [];
+    t = b.createElement(e);
+    t.async = !0;
+    t.src = v;
+    s = b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t, s);
+  })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+
+  (window as any).fbq('init', META_PIXEL_ID);
+  (window as any).fbq('track', 'PageView');
+}
+
 export default function CookieBanner() {
   const [cookieConsent, setCookieConsent] = useState<'unknown' | 'accepted' | 'rejected'>('unknown');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -11,6 +34,9 @@ export default function CookieBanner() {
     const savedConsent = localStorage.getItem('growth4u_consent');
     if (savedConsent === 'accepted' || savedConsent === 'rejected') {
       setCookieConsent(savedConsent);
+      if (savedConsent === 'accepted') {
+        initMetaPixel();
+      }
     }
     setIsLoaded(true);
   }, []);
@@ -18,29 +44,7 @@ export default function CookieBanner() {
   const handleAcceptCookies = () => {
     localStorage.setItem('growth4u_consent', 'accepted');
     setCookieConsent('accepted');
-
-    // Initialize Meta Pixel on acceptance
-    if (typeof window !== 'undefined' && !window.fbq) {
-      (function (f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
-        if (f.fbq) return;
-        n = f.fbq = function () {
-          n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-        };
-        if (!f._fbq) f._fbq = n;
-        n.push = n;
-        n.loaded = !0;
-        n.version = '2.0';
-        n.queue = [];
-        t = b.createElement(e);
-        t.async = !0;
-        t.src = v;
-        s = b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t, s);
-      })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-
-      (window as any).fbq('init', META_PIXEL_ID);
-      (window as any).fbq('track', 'PageView');
-    }
+    initMetaPixel();
   };
 
   const handleRejectCookies = () => {
