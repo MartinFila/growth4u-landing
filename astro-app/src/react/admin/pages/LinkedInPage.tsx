@@ -15,6 +15,9 @@ import {
   Calendar,
   Clock,
   Lock,
+  Heart,
+  MessageCircle,
+  Share2,
 } from 'lucide-react';
 import { getAllPosts, getLIScheduledPosts, createLIScheduledPost, deleteLIScheduledPost, updateLIScheduledPost } from '../../../lib/firebase-client';
 
@@ -49,6 +52,22 @@ interface SavedPost {
   scheduledTime: string;
   status: string;
   createdAt: Date | null;
+}
+
+interface LIMetricsPost {
+  id: string;
+  text: string;
+  createdAt: string | null;
+  likes: number;
+  comments: number;
+  shares: number;
+  impressions: number;
+  clicks: number;
+}
+
+interface LIMetrics {
+  authorUrn: string;
+  posts: LIMetricsPost[];
 }
 
 const FUNCTION_URL = '/.netlify/functions/linkedin';
@@ -199,6 +218,9 @@ export default function LinkedInPage() {
   const [linkedinStatus, setLinkedinStatus] = useState<{ connected: boolean; org?: string } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [activeTab, setActiveTab] = useState<'publish' | 'metrics'>('publish');
+  const [metrics, setMetrics] = useState<LIMetrics | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsError, setMetricsError] = useState('');
   const [savedPosts, setSavedPosts] = useState<SavedPost[]>([]);
 
   useEffect(() => {
@@ -228,6 +250,21 @@ export default function LinkedInPage() {
     } catch (err) {
       console.error('Error loading saved LI posts:', err);
     }
+  }
+
+  async function loadMetrics() {
+    setMetricsLoading(true);
+    setMetricsError('');
+    try {
+      const res = await fetch(`${FUNCTION_URL}?action=metrics`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      setMetrics(data as LIMetrics);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error cargando metricas';
+      setMetricsError(msg);
+    }
+    setMetricsLoading(false);
   }
 
   async function checkLinkedInConnection() {

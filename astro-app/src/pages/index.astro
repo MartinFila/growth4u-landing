@@ -7,6 +7,8 @@ import ResultsSection from '../components/ResultsSection.astro';
 import MethodologySection from '../components/MethodologySection.astro';
 import CaseStudies from '../components/CaseStudies.astro';
 import TeamSection from '../components/TeamSection.astro';
+import TrustScoreSection from '../components/TrustScoreSection.astro';
+import RecursosSection from '../components/RecursosSection.astro';
 import BlogPreviewSection from '../components/BlogPreviewSection.astro';
 import Footer from '../components/Footer.astro';
 import CookieBanner from '../react/CookieBanner';
@@ -124,7 +126,9 @@ const faqSchema = {
   <ResultsSection t={t} />
   <MethodologySection t={t} />
   <CaseStudies t={t} cases={t.cases.list} />
+  <TrustScoreSection t={t} />
   <TeamSection t={t} />
+  <RecursosSection t={t} />
   <BlogPreviewSection t={t} posts={posts} />
   <Footer t={t} bookingLink={BOOKING_LINK} />
   <CookieBanner client:idle />

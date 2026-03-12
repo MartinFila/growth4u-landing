@@ -35,6 +35,9 @@ export const COLORS = {
   background: '#f1f5f9',
 } as const;
 
+// Trust Score Analyzer
+export const TRUST_SCORE_URL = '/recursos/trust-score/';
+
 // Social
 export const LINKEDIN_URL = 'https://www.linkedin.com/company/growth4u/';
 export const TRUSTPILOT_URL = 'https://www.trustpilot.com/evaluate/growth4u.io';

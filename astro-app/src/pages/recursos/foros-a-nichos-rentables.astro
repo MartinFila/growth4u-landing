@@ -1,0 +1,683 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StaticLeadMagnetGate from '../../react/StaticLeadMagnetGate';
+import { SITE_URL } from '../../lib/constants';
+
+const slug = 'foros-a-nichos-rentables';
+const title = 'De Foros a Nichos Rentables en 14 Días';
+const description = 'El playbook exacto para encontrar nichos con dolor real usando Reddit, G2 y comunidades. Generó 27 nichos reales, incluyendo uno con €2.5M de mercado potencial.';
+
+const excerpt = `## Este playbook generó 27 nichos reales
+
+Incluyendo uno con €2.5M de mercado potencial estimado (TAM simplificado: nº empresas en nicho × ticket medio anual).
+
+No es teoría. Es el sistema exacto que usamos con clientes SaaS y fintech para **dejar de adivinar y basar GTM en señales reales**.
+
+**ICP objetivo:** SaaS / fintech B2B (100k–3M€ ARR) con equipo pequeño de growth / marketing (1–5 personas) que quieren dejar de adivinar nichos y mensajes y basarse en señales reales del mercado.
+
+**En 14 días tendrás:**
+- **5–15 nichos concretos** con dolor explícito, contexto y lenguaje real del mercado
+- **Framework JTBD codificado** (Push, Pull, Anxiety, Habit) para cada nicho
+- **2–3 hipótesis de mensaje y oferta** listas para testear en contenido, outbound y ads
+- **Pipeline de research repetible** que puedes ejecutar cada vez que entres en una nueva vertical`;
+
+const fullContent = `<div style="font-family:inherit">
+
+  <div style="background:#f8fafc;border-radius:16px;padding:28px;margin-bottom:28px">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:8px">¿Por qué funciona este sistema?</h2>
+    <p style="color:#64748b;font-size:15px;margin-bottom:16px">Reddit es <strong>"AI gold"</strong> para market research B2B. Es una de las fuentes más citadas por LLMs porque contiene conversaciones reales, sin filtrar, de personas con problemas reales. La misma lógica aplica a G2, Capterra, IndieHackers y comunidades especializadas.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="background:white;border-radius:12px;padding:18px;border-left:4px solid #22c55e">
+        <h3 style="color:#032149;font-size:15px;font-weight:700;margin-bottom:8px">Lo que resuelve</h3>
+        <ul style="color:#475569;font-size:14px;margin:0;padding-left:18px;line-height:1.8">
+          <li>Dejar de inventar "personas" desde una sala de reunión</li>
+          <li>Encontrar nichos con dolor explícito y lenguaje propio</li>
+          <li>Aterrizar insights en formato utilizable para GTM</li>
+        </ul>
+      </div>
+      <div style="background:white;border-radius:12px;padding:18px;border-left:4px solid #f59e0b">
+        <h3 style="color:#032149;font-size:15px;font-weight:700;margin-bottom:8px">Lo que NO resuelve</h3>
+        <ul style="color:#475569;font-size:14px;margin:0;padding-left:18px;line-height:1.8">
+          <li>No es un estudio cuantitativo de mercado</li>
+          <li>No reemplaza entrevistas 1:1 — las prepara</li>
+          <li>No es scraping técnico masivo</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:16px;padding:28px;margin-bottom:28px;border:1px solid #e2e8f0">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:20px">Vista rápida del sistema (7 pasos)</h2>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead>
+          <tr style="background:#032149;color:white">
+            <th style="padding:12px 16px;text-align:left;border-radius:8px 0 0 0">Paso</th>
+            <th style="padding:12px 16px;text-align:left">Qué haces</th>
+            <th style="padding:12px 16px;text-align:left">Output</th>
+            <th style="padding:12px 16px;text-align:center;border-radius:0 8px 0 0">Tiempo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f8fafc">
+            <td style="padding:12px 16px;font-weight:700;color:#6351d5">1</td>
+            <td style="padding:12px 16px;color:#475569">Definir hipótesis de partida</td>
+            <td style="padding:12px 16px;color:#475569">Problema + keywords + tipo de solución</td>
+            <td style="padding:12px 16px;text-align:center;color:#64748b">30–45'</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 16px;font-weight:700;color:#6351d5">2</td>
+            <td style="padding:12px 16px;color:#475569">Mapear fuentes y comunidades</td>
+            <td style="padding:12px 16px;color:#475569">Lista de 10–20 fuentes priorizadas</td>
+            <td style="padding:12px 16px;text-align:center;color:#64748b">45–60'</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:12px 16px;font-weight:700;color:#6351d5">3</td>
+            <td style="padding:12px 16px;color:#475569">Recolectar conversaciones relevantes</td>
+            <td style="padding:12px 16px;color:#475569">50–80 extractos de calidad</td>
+            <td style="padding:12px 16px;text-align:center;color:#64748b">3–4h</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 16px;font-weight:700;color:#6351d5">4</td>
+            <td style="padding:12px 16px;color:#475569">Codificar patrones con JTBD</td>
+            <td style="padding:12px 16px;color:#475569">Tabla de pains, triggers, fuerzas</td>
+            <td style="padding:12px 16px;text-align:center;color:#64748b">2–3h</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:12px 16px;font-weight:700;color:#6351d5">5</td>
+            <td style="padding:12px 16px;color:#475569">Detectar nichos y contextos</td>
+            <td style="padding:12px 16px;color:#475569">15–25 nichos preliminares</td>
+            <td style="padding:12px 16px;text-align:center;color:#64748b">1–2h</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 16px;font-weight:700;color:#6351d5">6</td>
+            <td style="padding:12px 16px;color:#475569">Scoring y selección final</td>
+            <td style="padding:12px 16px;color:#475569">Tabla de nichos accionables</td>
+            <td style="padding:12px 16px;text-align:center;color:#64748b">1h</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:12px 16px;font-weight:700;color:#6351d5">7</td>
+            <td style="padding:12px 16px;color:#475569">Destilar mensajes GTM</td>
+            <td style="padding:12px 16px;color:#475569">Headlines + hooks + ángulos de oferta</td>
+            <td style="padding:12px 16px;text-align:center;color:#64748b">1–2h</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="background:#f8fafc;border-radius:16px;padding:28px;margin-bottom:28px">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:6px">Paso 1 — Definir hipótesis de partida</h2>
+    <p style="color:#64748b;font-size:15px;margin-bottom:20px">Antes de abrir ninguna fuente, completa esta plantilla:</p>
+    <div style="background:white;border-radius:12px;padding:20px;border:2px dashed #6351d5;margin-bottom:16px">
+      <h3 style="color:#6351d5;font-size:15px;font-weight:700;margin-bottom:14px">Template: Hipótesis de Investigación</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:14px;color:#475569">
+        <div><strong style="color:#032149">Problema central que quiero estudiar:</strong><br/>[Ej: "Empresas que dependen demasiado de afiliados/publishers y no pueden atribuir bien qué canal genera valor."]</div>
+        <div><strong style="color:#032149">Tipo de solución que ofrezco:</strong><br/>[Ej: "Herramienta de atribución multi-touch" / "Servicio de GTM strategy"]</div>
+        <div><strong style="color:#032149">Keywords núcleo (5–10, ideal EN + ES):</strong><br/>Problema: [attribution, tracking, affiliates, cold email, churn]<br/>Tipo de empresa: [saas, fintech, agency, b2b, startup]<br/>Rol/contexto: [founder, marketer, growth, cmo, head of marketing]</div>
+        <div><strong style="color:#032149">Job Story inicial (hipótesis):</strong><br/>"When [situación], I want to [motivación] so I can [resultado esperado]."</div>
+      </div>
+    </div>
+    <div style="background:white;border-radius:12px;padding:18px;border-left:4px solid #45b6f7">
+      <h4 style="color:#032149;font-size:14px;font-weight:700;margin-bottom:8px">Ejemplos de problemas bien definidos:</h4>
+      <ul style="color:#475569;font-size:14px;margin:0;padding-left:18px;line-height:1.8">
+        <li>"Founders que odian hacer outbound, pero lo necesitan para cerrar deals."</li>
+        <li>"Equipos de marketing que no pueden atribuir bien lo que viene de LinkedIn."</li>
+        <li>"Agencias de performance que pierden clientes por no demostrar ROI claro."</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:16px;padding:28px;margin-bottom:28px;border:1px solid #e2e8f0">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:20px">Paso 2 — Mapear fuentes y comunidades</h2>
+    <h3 style="color:#032149;font-size:17px;font-weight:700;margin-bottom:14px">Fuentes primarias (alto valor)</h3>
+    <div style="overflow-x:auto;margin-bottom:20px">
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead>
+          <tr style="background:#032149;color:white">
+            <th style="padding:10px 14px;text-align:left;border-radius:8px 0 0 0">Fuente</th>
+            <th style="padding:10px 14px;text-align:left">Qué buscar</th>
+            <th style="padding:10px 14px;text-align:left;border-radius:0 8px 0 0">Por qué funciona</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Reddit</td>
+            <td style="padding:10px 14px;color:#475569">r/SaaS, r/startups, r/marketing, r/Entrepreneur, r/analytics, r/fintech</td>
+            <td style="padding:10px 14px;color:#475569">Conversaciones sin filtrar, pain points explícitos</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;font-weight:700;color:#032149">G2 / Capterra</td>
+            <td style="padding:10px 14px;color:#475569">Reviews 3–4 estrellas de competidores</td>
+            <td style="padding:10px 14px;color:#475569">Trade-offs reales, "jobs" articulados</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 14px;font-weight:700;color:#032149">IndieHackers</td>
+            <td style="padding:10px 14px;color:#475569">Posts de "building in public", problemas de founders</td>
+            <td style="padding:10px 14px;color:#475569">Contexto early-stage, willingness to pay</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Slack/Discord</td>
+            <td style="padding:10px 14px;color:#475569">Comunidades de tu vertical (growth, product, sector)</td>
+            <td style="padding:10px 14px;color:#475569">Conversaciones más profundas, menos ruido</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Twitter/X</td>
+            <td style="padding:10px 14px;color:#475569">Hilos de quejas, "switching stories"</td>
+            <td style="padding:10px 14px;color:#475569">"Why I switched from X to Y" = JTBD puro</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="background:#f0f0ff;border-radius:12px;padding:18px;margin-bottom:16px">
+      <h4 style="color:#6351d5;font-size:14px;font-weight:700;margin-bottom:8px">Herramienta clave: Map of Reddit</h4>
+      <p style="color:#475569;font-size:14px;margin:0"><a href="https://anvaka.github.io/map-of-reddit/" target="_blank" rel="noopener noreferrer" style="color:#6351d5;text-decoration:underline">Map of Reddit</a> te permite introducir un subreddit (ej: r/SaaS) y ver visualmente todos los subreddits relacionados. Descubre comunidades nicho que no encontrarías buscando manualmente.</p>
+    </div>
+    <div style="background:#f8fafc;border-radius:12px;padding:18px">
+      <h4 style="color:#032149;font-size:14px;font-weight:700;margin-bottom:8px">Operadores de búsqueda avanzada</h4>
+      <code style="display:block;background:#1e293b;color:#e2e8f0;padding:14px;border-radius:8px;font-size:13px;line-height:1.7;white-space:pre-wrap"># Reddit - Búsquedas por problema
+site:reddit.com "pain point" + [tu keyword]
+site:reddit.com "switched from" + [competidor]
+site:reddit.com "looking for" + [tipo de solución]
+
+# G2 - Reviews de competidores
+site:g2.com [competidor] "I wish" OR "missing" OR "switched"
+
+# IndieHackers
+site:indiehackers.com [keyword] "struggling" OR "advice"</code>
+    </div>
+  </div>
+
+  <div style="background:#f8fafc;border-radius:16px;padding:28px;margin-bottom:28px">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:6px">Paso 3 — Recolectar conversaciones relevantes</h2>
+    <p style="color:#64748b;font-size:15px;margin-bottom:20px">Para cada hilo/comentario/review interesante, captura:</p>
+    <div style="background:white;border-radius:12px;padding:20px;border:2px dashed #0faec1;margin-bottom:20px">
+      <h3 style="color:#0faec1;font-size:15px;font-weight:700;margin-bottom:14px">Template: Extracto de Conversación</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;color:#475569">
+        <div><strong>Fuente:</strong> [Reddit / G2 / Capterra / Otro]</div>
+        <div><strong>URL / Permalink:</strong> [link]</div>
+        <div><strong>Tipo:</strong> [Post / Comment / Review]</div>
+        <div><strong>Fecha aprox.:</strong> [mes/año]</div>
+        <div><strong>Rol percibido:</strong> [founder / marketer / agency owner / etc.]</div>
+        <div><strong>Extracto literal (1–3 frases clave):</strong> "[Texto exacto copiado]"</div>
+        <div><strong>Tags preliminares:</strong> [pain / trigger / objeción / solución / etc.]</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+      <div style="background:white;border-radius:12px;padding:16px;border-left:4px solid #6351d5">
+        <h4 style="color:#032149;font-size:14px;font-weight:700;margin-bottom:8px">En Reddit</h4>
+        <ul style="color:#475569;font-size:13px;margin:0;padding-left:16px;line-height:1.7">
+          <li>Posts largos con muchos comentarios</li>
+          <li>Comentarios con upvotes altos</li>
+          <li>"Rant posts" con frustración detallada</li>
+        </ul>
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px;border-left:4px solid #45b6f7">
+        <h4 style="color:#032149;font-size:14px;font-weight:700;margin-bottom:8px">En G2/Capterra</h4>
+        <ul style="color:#475569;font-size:13px;margin:0;padding-left:16px;line-height:1.7">
+          <li>Filtrar por 3–4 estrellas</li>
+          <li>El "Push" (problema antes del producto)</li>
+          <li>Unmet needs ("falta" o "podría ser mejor")</li>
+        </ul>
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px;border-left:4px solid #0faec1">
+        <h4 style="color:#032149;font-size:14px;font-weight:700;margin-bottom:8px">Switching stories</h4>
+        <ul style="color:#475569;font-size:13px;margin:0;padding-left:16px;line-height:1.7">
+          <li>El tipping point</li>
+          <li>Criterios de comparación explícitos</li>
+          <li>Lenguaje de progreso</li>
+        </ul>
+      </div>
+    </div>
+    <div style="background:#fffbeb;border-radius:12px;padding:16px;border-left:4px solid #f59e0b">
+      <p style="color:#92400e;font-size:14px;font-weight:700;margin:0">Regla de oro: Mejor 50 buenos extractos que 500 superficiales. Busca conversaciones donde el problema está muy vivo, el lenguaje es muy específico y repetido, y puedes identificar quién habla y en qué contexto.</p>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:16px;padding:28px;margin-bottom:28px;border:1px solid #e2e8f0">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:8px">Paso 4 — Codificar patrones con Framework JTBD</h2>
+    <p style="color:#64748b;font-size:15px;margin-bottom:20px">Para que un cliente cambie de solución, el <strong>Push + Pull</strong> debe ser más fuerte que el <strong>Anxiety + Habit</strong>.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div style="background:#dcfce7;border-radius:12px;padding:16px">
+        <h4 style="color:#15803d;font-size:14px;font-weight:700;margin-bottom:6px">1. Push (El Problema)</h4>
+        <p style="color:#475569;font-size:13px;margin:0">"Estoy harto de mi herramienta actual. Es lenta y mi equipo la odia."</p>
+      </div>
+      <div style="background:#dbeafe;border-radius:12px;padding:16px">
+        <h4 style="color:#1d4ed8;font-size:14px;font-weight:700;margin-bottom:6px">2. Pull (La Promesa)</h4>
+        <p style="color:#475569;font-size:13px;margin:0">"Esta nueva tool se ve tan limpia e intuitiva. Imagina lo rápido que podríamos movernos."</p>
+      </div>
+      <div style="background:#fef3c7;border-radius:12px;padding:16px">
+        <h4 style="color:#92400e;font-size:14px;font-weight:700;margin-bottom:6px">3. Anxiety (El Miedo)</h4>
+        <p style="color:#475569;font-size:13px;margin:0">"¿Y si es difícil migrar los datos? ¿Y si mi equipo no lo adopta?"</p>
+      </div>
+      <div style="background:#f1f5f9;border-radius:12px;padding:16px">
+        <h4 style="color:#475569;font-size:14px;font-weight:700;margin-bottom:6px">4. Habit (Zona de Confort)</h4>
+        <p style="color:#475569;font-size:13px;margin:0">"Mi tool actual es molesta, pero al menos sé cómo funciona."</p>
+      </div>
+    </div>
+    <div style="overflow-x:auto;margin-bottom:20px">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:#032149;color:white">
+            <th style="padding:10px 12px;text-align:left;border-radius:8px 0 0 0">Extracto</th>
+            <th style="padding:10px 12px;text-align:center">Push</th>
+            <th style="padding:10px 12px;text-align:center">Pull</th>
+            <th style="padding:10px 12px;text-align:center">Anxiety</th>
+            <th style="padding:10px 12px;text-align:center">Habit</th>
+            <th style="padding:10px 12px;text-align:left;border-radius:0 8px 0 0">Lenguaje clave</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 12px;color:#475569">"We have no idea which partner is driving..."</td>
+            <td style="padding:10px 12px;text-align:center;color:#22c55e;font-weight:700">&#10003;</td>
+            <td style="padding:10px 12px;text-align:center;color:#d1d5db">—</td>
+            <td style="padding:10px 12px;text-align:center;color:#d1d5db">—</td>
+            <td style="padding:10px 12px;text-align:center;color:#d1d5db">—</td>
+            <td style="padding:10px 12px;color:#475569">"no idea", "which partner"</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;color:#475569">"I tried X and it didn't work because..."</td>
+            <td style="padding:10px 12px;text-align:center;color:#d1d5db">—</td>
+            <td style="padding:10px 12px;text-align:center;color:#d1d5db">—</td>
+            <td style="padding:10px 12px;text-align:center;color:#d1d5db">—</td>
+            <td style="padding:10px 12px;text-align:center;color:#f59e0b;font-weight:700">&#10003;</td>
+            <td style="padding:10px 12px;color:#475569">"tried", "didn't work"</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 12px;color:#475569">"Finally feel in control of our attribution"</td>
+            <td style="padding:10px 12px;text-align:center;color:#d1d5db">—</td>
+            <td style="padding:10px 12px;text-align:center;color:#3b82f6;font-weight:700">&#10003;</td>
+            <td style="padding:10px 12px;text-align:center;color:#d1d5db">—</td>
+            <td style="padding:10px 12px;text-align:center;color:#d1d5db">—</td>
+            <td style="padding:10px 12px;color:#475569">"finally", "in control"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="background:#f0f0ff;border-radius:12px;padding:18px">
+      <h4 style="color:#6351d5;font-size:14px;font-weight:700;margin-bottom:8px">Prompt sugerido para IA como copiloto</h4>
+      <code style="display:block;background:#1e293b;color:#e2e8f0;padding:14px;border-radius:8px;font-size:13px;line-height:1.6;white-space:pre-wrap">Analiza estos [X] extractos de conversaciones de [Reddit/G2].
+Para cada uno, identifica:
+1. Push (frustración/dolor actual)
+2. Pull (qué buscan en una solución)
+3. Anxiety (miedos sobre cambiar)
+4. Habit (por qué siguen con lo actual)
+5. Frases clave literales (copia exacta)
+
+Después, dame los 5–10 patrones más repetidos.</code>
+    </div>
+  </div>
+
+  <div style="background:#f8fafc;border-radius:16px;padding:28px;margin-bottom:28px">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:8px">Paso 5 — Detectar nichos y contextos</h2>
+    <p style="color:#64748b;font-size:15px;margin-bottom:20px">Combina <strong>quién</strong> + <strong>contexto</strong> + <strong>dolor</strong> para definir nichos:</p>
+    <div style="background:white;border-radius:12px;padding:20px;border:2px dashed #22c55e;margin-bottom:16px">
+      <h3 style="color:#22c55e;font-size:15px;font-weight:700;margin-bottom:12px">Formato: "[Rol/Tipo de empresa] de [tamaño/fase] que [contexto específico], preocupados por [dolor principal]."</h3>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:14px;color:#475569">"Founders de SaaS B2B 20–50k MRR que dependen de afiliados y no tienen tracking fiable, preocupados por comerse el margen."</div>
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:14px;color:#475569">"Agencias de performance que gestionan ads para 5–15 clientes y no consiguen atribuir lo que viene de contenido orgánico + dark social."</div>
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;font-size:14px;color:#475569">"CMOs de fintech Series A que acaban de contratar su primer equipo de marketing y no saben cómo medir el impacto de cada canal."</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:16px;padding:28px;margin-bottom:28px;border:1px solid #e2e8f0">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:20px">Paso 6 — Scoring y selección (5–15 nichos finales)</h2>
+    <div style="overflow-x:auto;margin-bottom:20px">
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead>
+          <tr style="background:#032149;color:white">
+            <th style="padding:10px 14px;text-align:left;border-radius:8px 0 0 0">Criterio</th>
+            <th style="padding:10px 14px;text-align:left">Qué evalúas</th>
+            <th style="padding:10px 14px;text-align:center;border-radius:0 8px 0 0">Peso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Dolor (Pain Score)</td>
+            <td style="padding:10px 14px;color:#475569">¿Qué tan urgente/intenso? ¿Posts largos, lenguaje emocional?</td>
+            <td style="padding:10px 14px;text-align:center"><span style="background:#dcfce7;color:#15803d;padding:4px 10px;border-radius:20px;font-weight:700">30%</span></td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Claridad</td>
+            <td style="padding:10px 14px;color:#475569">¿Los reconoces cuando los ves? ¿Identificables con datos?</td>
+            <td style="padding:10px 14px;text-align:center"><span style="background:#dbeafe;color:#1d4ed8;padding:4px 10px;border-radius:20px;font-weight:700">20%</span></td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Alcanzabilidad</td>
+            <td style="padding:10px 14px;color:#475569">¿Están en comunidades, tienen emails, están en LinkedIn?</td>
+            <td style="padding:10px 14px;text-align:center"><span style="background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:20px;font-weight:700">25%</span></td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Encaje con tu oferta</td>
+            <td style="padding:10px 14px;color:#475569">¿Puedes ayudarles con lo que ofreces hoy?</td>
+            <td style="padding:10px 14px;text-align:center"><span style="background:#f3e8ff;color:#7c3aed;padding:4px 10px;border-radius:20px;font-weight:700">15%</span></td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Willingness to Pay</td>
+            <td style="padding:10px 14px;color:#475569">¿Mencionan presupuestos, herramientas de pago?</td>
+            <td style="padding:10px 14px;text-align:center"><span style="background:#f1f5f9;color:#475569;padding:4px 10px;border-radius:20px;font-weight:700">10%</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="background:#dcfce7;border-radius:12px;padding:18px">
+      <h4 style="color:#15803d;font-size:14px;font-weight:700;margin-bottom:10px">Checklist del nicho final</h4>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:14px;color:#475569">
+        <label style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> El problema está muy vivo (posts largos, muchas respuestas)</label>
+        <label style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> El lenguaje es muy específico y se repite entre fuentes</label>
+        <label style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> Ves opciones reales de ayudarles con lo que tú ofreces</label>
+        <label style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> Puedes describirlos sin ambigüedad a alguien más</label>
+        <label style="display:flex;align-items:flex-start;gap:8px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> Hay señales de willingness to pay</label>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#f8fafc;border-radius:16px;padding:28px;margin-bottom:28px">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:8px">Paso 7 — Destilar insights GTM</h2>
+    <p style="color:#64748b;font-size:15px;margin-bottom:20px">Para cada nicho final, escribe:</p>
+    <div style="background:white;border-radius:12px;padding:20px;border:2px dashed #6351d5;margin-bottom:20px">
+      <h3 style="color:#6351d5;font-size:15px;font-weight:700;margin-bottom:14px">Template: Insight GTM por Nicho</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:#475569">
+        <div><strong style="color:#032149">Nicho:</strong> [Nombre]</div>
+        <div><strong style="color:#032149">Headline de dolor:</strong> "[Frase que podría ir en un post/landing, usando su lenguaje]"</div>
+        <div><strong style="color:#032149">1–2 bullets de consecuencias:</strong>
+          <br/>• [Qué les cuesta este problema en tiempo/dinero/oportunidad]
+          <br/>• [Efecto secundario que quizás no ven]</div>
+        <div><strong style="color:#032149">1 insight contraintuitivo:</strong> "[Algo que descubriste leyendo foros]"</div>
+        <div><strong style="color:#032149">Job Story:</strong> "When [situación], I want to [motivación] so I can [resultado]."</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead>
+          <tr style="background:#032149;color:white">
+            <th style="padding:10px 14px;text-align:left;border-radius:8px 0 0 0">Activo GTM</th>
+            <th style="padding:10px 14px;text-align:left;border-radius:0 8px 0 0">Ejemplo basado en nicho</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Post de LinkedIn</td>
+            <td style="padding:10px 14px;color:#475569">"Escrapeamos Reddit y encontramos nichos de €2.5M. Esto es lo que descubrimos..."</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Email/DM</td>
+            <td style="padding:10px 14px;color:#475569">"Vi tu post sobre [problema específico]. Pasé por lo mismo. Happy to share what worked."</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Landing copy</td>
+            <td style="padding:10px 14px;color:#475569">H1: "[Resultado prometido] sin [frustración principal], en [tiempo]"</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 14px;font-weight:700;color:#032149">Ángulo de oferta</td>
+            <td style="padding:10px 14px;color:#475569">"Sistema de [X] para [nicho] que quieren [resultado] sin [frustración]"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:16px;padding:28px;margin-bottom:28px;border:1px solid #e2e8f0">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:20px">Checklist de implementación (14 días)</h2>
+    <div style="display:grid;gap:12px">
+      <div style="background:#f0f0ff;border-radius:12px;padding:18px">
+        <h3 style="color:#6351d5;font-size:15px;font-weight:700;margin-bottom:10px">Semana 1: Recolección y codificación</h3>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="display:flex;align-items:flex-start;gap:8px;color:#475569;font-size:14px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> <strong>Día 1:</strong> Definir hipótesis + keywords (45')</label>
+          <label style="display:flex;align-items:flex-start;gap:8px;color:#475569;font-size:14px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> <strong>Día 2:</strong> Mapear 10–20 fuentes con Map of Reddit + búsquedas (60')</label>
+          <label style="display:flex;align-items:flex-start;gap:8px;color:#475569;font-size:14px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> <strong>Días 3–5:</strong> Recolectar 50–80 extractos de calidad (3 sesiones de 60–90')</label>
+          <label style="display:flex;align-items:flex-start;gap:8px;color:#475569;font-size:14px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> <strong>Días 6–7:</strong> Codificar patrones JTBD con ayuda de IA (2 sesiones de 60–90')</label>
+        </div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:12px;padding:18px">
+        <h3 style="color:#15803d;font-size:15px;font-weight:700;margin-bottom:10px">Semana 2: Síntesis y activación</h3>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label style="display:flex;align-items:flex-start;gap:8px;color:#475569;font-size:14px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> <strong>Día 8:</strong> Definir 15–25 nichos preliminares (90')</label>
+          <label style="display:flex;align-items:flex-start;gap:8px;color:#475569;font-size:14px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> <strong>Día 9:</strong> Scoring y selección de 5–15 nichos finales (60')</label>
+          <label style="display:flex;align-items:flex-start;gap:8px;color:#475569;font-size:14px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> <strong>Días 10–11:</strong> Destilar insights GTM + Job Stories (2 sesiones de 60')</label>
+          <label style="display:flex;align-items:flex-start;gap:8px;color:#475569;font-size:14px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"/> <strong>Días 12–14:</strong> Redactar primeros mensajes y tests por nicho (2 sesiones de 60')</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#f8fafc;border-radius:16px;padding:28px;margin-bottom:28px">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:20px">Bonus: Reddit DMs (25% conversion rate)</h2>
+    <p style="color:#64748b;font-size:15px;margin-bottom:16px">Mientras todos pelean por atención en posts, los DMs convierten al 25%.</p>
+    <div style="display:grid;gap:12px">
+      <div style="background:white;border-radius:12px;padding:16px;border-left:4px solid #6351d5">
+        <p style="color:#475569;font-size:14px;margin:0"><strong style="color:#032149">1.</strong> Encuentra posts donde la gente se queja de problemas que tú resuelves.</p>
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px;border-left:4px solid #45b6f7">
+        <p style="color:#475569;font-size:14px;margin:0"><strong style="color:#032149">2.</strong> Comenta con consejo útil públicamente primero.</p>
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px;border-left:4px solid #0faec1">
+        <p style="color:#475569;font-size:14px;margin:0"><strong style="color:#032149">3.</strong> Espera un día (crucial).</p>
+      </div>
+      <div style="background:white;border-radius:12px;padding:16px;border-left:4px solid #22c55e">
+        <p style="color:#475569;font-size:14px;margin:0"><strong style="color:#032149">4.</strong> DM: "Hey, vi tu post sobre [problema]. Construí algo que podría ayudar. ¿Te interesaría probarlo? Busco feedback honesto."</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:16px;padding:28px;margin-bottom:28px;border:1px solid #e2e8f0">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:20px">Mini Caso Real: De 200 problemas a €2.5M</h2>
+    <div style="background:#f0f0ff;border-radius:12px;padding:20px;margin-bottom:16px">
+      <p style="color:#475569;font-size:14px;margin:0 0 12px 0"><strong style="color:#032149">Contexto:</strong> Proyecto de GTM para fintech en España. Necesitábamos identificar nichos de entrada específicos.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="background:white;border-radius:8px;padding:10px 16px;text-align:center">
+          <div style="color:#6351d5;font-size:24px;font-weight:800">200</div>
+          <div style="color:#64748b;font-size:12px">problemas</div>
+        </div>
+        <div style="color:#64748b;display:flex;align-items:center;font-size:20px">→</div>
+        <div style="background:white;border-radius:8px;padding:10px 16px;text-align:center">
+          <div style="color:#6351d5;font-size:24px;font-weight:800">27</div>
+          <div style="color:#64748b;font-size:12px">nichos</div>
+        </div>
+        <div style="color:#64748b;display:flex;align-items:center;font-size:20px">→</div>
+        <div style="background:white;border-radius:8px;padding:10px 16px;text-align:center">
+          <div style="color:#22c55e;font-size:24px;font-weight:800">6</div>
+          <div style="color:#64748b;font-size:12px">prioridades</div>
+        </div>
+        <div style="color:#64748b;display:flex;align-items:center;font-size:20px">→</div>
+        <div style="background:white;border-radius:8px;padding:10px 16px;text-align:center">
+          <div style="color:#22c55e;font-size:24px;font-weight:800">€2.5M</div>
+          <div style="color:#64748b;font-size:12px">mercado potencial</div>
+        </div>
+      </div>
+      <p style="color:#475569;font-size:14px;margin:0"><strong>Tiempo total:</strong> ~15 horas en 2 semanas</p>
+    </div>
+    <h4 style="color:#032149;font-size:14px;font-weight:700;margin-bottom:8px">Nichos encontrados:</h4>
+    <ul style="color:#475569;font-size:14px;margin:0;padding-left:18px;line-height:1.8">
+      <li>"Founders de SaaS B2B 20-50k MRR que dependen de afiliados y no tienen tracking fiable"</li>
+      <li>"CMOs de fintech Series A que acaban de contratar equipo y no saben medir impacto por canal"</li>
+      <li>"Agencias de performance que pierden clientes por no demostrar ROI de dark social"</li>
+    </ul>
+  </div>
+
+  <div style="background:#f8fafc;border-radius:16px;padding:28px;margin-bottom:28px">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:20px">Los 7 errores más comunes</h2>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:#dc2626;color:white">
+            <th style="padding:10px 12px;text-align:center;border-radius:8px 0 0 0;width:30px">#</th>
+            <th style="padding:10px 12px;text-align:left">Error</th>
+            <th style="padding:10px 12px;text-align:left;border-radius:0 8px 0 0">Cómo evitarlo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#fef2f2">
+            <td style="padding:10px 12px;text-align:center;font-weight:700;color:#dc2626">1</td>
+            <td style="padding:10px 12px;color:#475569">Empezar sin hipótesis clara</td>
+            <td style="padding:10px 12px;color:#475569">Completa el template de hipótesis ANTES de abrir Reddit</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;text-align:center;font-weight:700;color:#dc2626">2</td>
+            <td style="padding:10px 12px;color:#475569">Guardar demasiados extractos superficiales</td>
+            <td style="padding:10px 12px;color:#475569">Regla 50/80: mejor 50 buenos que 500 mediocres</td>
+          </tr>
+          <tr style="background:#fef2f2">
+            <td style="padding:10px 12px;text-align:center;font-weight:700;color:#dc2626">3</td>
+            <td style="padding:10px 12px;color:#475569">No capturar el lenguaje literal</td>
+            <td style="padding:10px 12px;color:#475569">Copia/pega textual. Nunca parafrasees.</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;text-align:center;font-weight:700;color:#dc2626">4</td>
+            <td style="padding:10px 12px;color:#475569">Definir nichos demasiado amplios</td>
+            <td style="padding:10px 12px;color:#475569">Usa el formato: Quién + Contexto + Dolor</td>
+          </tr>
+          <tr style="background:#fef2f2">
+            <td style="padding:10px 12px;text-align:center;font-weight:700;color:#dc2626">5</td>
+            <td style="padding:10px 12px;color:#475569">Ignorar el contexto del que habla</td>
+            <td style="padding:10px 12px;color:#475569">Siempre anota rol percibido + señales de contexto</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;text-align:center;font-weight:700;color:#dc2626">6</td>
+            <td style="padding:10px 12px;color:#475569">Solo buscar en Reddit</td>
+            <td style="padding:10px 12px;color:#475569">Usa mínimo 3 tipos de fuentes diferentes</td>
+          </tr>
+          <tr style="background:#fef2f2">
+            <td style="padding:10px 12px;text-align:center;font-weight:700;color:#dc2626">7</td>
+            <td style="padding:10px 12px;color:#475569">No conectar insights con acciones GTM</td>
+            <td style="padding:10px 12px;color:#475569">Cada nicho: Job Story + 2-3 hipótesis de mensaje</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="background:white;border-radius:16px;padding:28px;margin-bottom:28px;border:1px solid #e2e8f0">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:20px">Versión Express: Solo tienes 4 horas</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:#f0f0ff;border-radius:12px;padding:18px">
+        <h3 style="color:#6351d5;font-size:15px;font-weight:700;margin-bottom:8px">Hora 1: Setup rápido</h3>
+        <ul style="color:#475569;font-size:14px;margin:0;padding-left:18px;line-height:1.8">
+          <li>1 problema + 5 keywords (15')</li>
+          <li>5 fuentes con Map of Reddit (25')</li>
+          <li>Operadores de búsqueda (20')</li>
+        </ul>
+      </div>
+      <div style="background:#f0f9ff;border-radius:12px;padding:18px">
+        <h3 style="color:#0284c7;font-size:15px;font-weight:700;margin-bottom:8px">Horas 2-3: Recolección</h3>
+        <ul style="color:#475569;font-size:14px;margin:0;padding-left:18px;line-height:1.8">
+          <li>25-30 extractos de alta calidad</li>
+          <li>Posts largos + reviews 3-4 estrellas</li>
+        </ul>
+      </div>
+      <div style="background:#f0fdf4;border-radius:12px;padding:18px;grid-column:span 2">
+        <h3 style="color:#15803d;font-size:15px;font-weight:700;margin-bottom:8px">Hora 4: Síntesis express</h3>
+        <ul style="color:#475569;font-size:14px;margin:0;padding-left:18px;line-height:1.8">
+          <li>Codifica patrones JTBD con IA (30')</li>
+          <li>Define 3-5 nichos preliminares (20')</li>
+          <li>1 Job Story por nicho (10')</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:#f8fafc;border-radius:16px;padding:28px;margin-bottom:28px">
+    <h2 style="color:#032149;font-size:22px;font-weight:800;margin-bottom:20px">Métricas de éxito</h2>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead>
+          <tr style="background:#032149;color:white">
+            <th style="padding:12px 16px;text-align:left;border-radius:8px 0 0 0">Métrica</th>
+            <th style="padding:12px 16px;text-align:center;border-radius:0 8px 0 0">Target</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f8fafc">
+            <td style="padding:12px 16px;color:#475569">Extractos de calidad recolectados</td>
+            <td style="padding:12px 16px;text-align:center;font-weight:700;color:#032149">50–80</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 16px;color:#475569">Nichos finales definidos</td>
+            <td style="padding:12px 16px;text-align:center;font-weight:700;color:#032149">5–15</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:12px 16px;color:#475569">Job Stories completas</td>
+            <td style="padding:12px 16px;text-align:center;font-weight:700;color:#032149">1 por nicho</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 16px;color:#475569">Hipótesis de mensaje para test</td>
+            <td style="padding:12px 16px;text-align:center;font-weight:700;color:#032149">2–3 por nicho top</td>
+          </tr>
+          <tr style="background:#f8fafc">
+            <td style="padding:12px 16px;color:#475569">Tiempo total invertido</td>
+            <td style="padding:12px 16px;text-align:center;font-weight:700;color:#22c55e">12–18 horas en 14 días</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,#6351d5,#032149);border-radius:16px;padding:28px;text-align:center">
+    <h2 style="color:white;font-size:22px;font-weight:800;margin-bottom:10px">¿Quieres que lo hagamos juntos?</h2>
+    <p style="color:rgba(255,255,255,0.8);font-size:15px;margin-bottom:8px">Este playbook es la versión self-service de nuestro sistema de Niche Discovery.</p>
+    <p style="color:rgba(255,255,255,0.7);font-size:14px;margin-bottom:20px">Si prefieres que un equipo especializado ejecute el research, codifique nichos y traduzca insights en mensajes y outbound:</p>
+    <a href="https://now.growth4u.io/widget/bookings/growth4u_demo" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:white;color:#6351d5;font-weight:700;font-size:15px;padding:14px 28px;border-radius:8px;text-decoration:none">Agendar sesión de 30 min →</a>
+    <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:12px;margin-bottom:0">No es un pitch. Es una conversación para entender tu contexto.</p>
+  </div>
+
+</div>`;
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+    { '@type': 'ListItem', position: 2, name: 'Recursos', item: `${SITE_URL}/recursos/` },
+    { '@type': 'ListItem', position: 3, name: title, item: `${SITE_URL}/recursos/${slug}/` },
+  ],
+};
+---
+
+<BaseLayout
+  title={`${title} | Growth4U`}
+  description={description}
+  canonical={`${SITE_URL}/recursos/${slug}/`}
+  jsonLd={[breadcrumbSchema]}
+>
+  <main class="min-h-screen bg-white">
+    <section class="bg-[#032149] pt-20 pb-14">
+      <div class="max-w-3xl mx-auto px-4">
+        <div class="flex items-center gap-2 mb-6">
+          <a href="/" class="text-white/50 hover:text-white text-sm transition-colors">Growth4U</a>
+          <span class="text-white/30">/</span>
+          <a href="/recursos/" class="text-white/50 hover:text-white text-sm transition-colors">Recursos</a>
+        </div>
+        <span class="inline-block px-3 py-1 bg-[#6351d5]/30 text-[#a89cf7] rounded-full text-xs font-bold uppercase tracking-wider mb-6">
+          Playbook Gratuito
+        </span>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-6 leading-tight">{title}</h1>
+        <p class="text-xl text-slate-300 leading-relaxed mb-8">{description}</p>
+        <div class="flex flex-wrap items-center gap-6 text-slate-400 text-sm">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>100% gratuito</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>Acceso inmediato</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>Sin spam</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="max-w-3xl mx-auto px-4 py-12 pb-20">
+      <StaticLeadMagnetGate
+        client:only="react"
+        magnetSlug={slug}
+        magnetTitle={title}
+        excerpt={excerpt}
+        fullContent={fullContent}
+      />
+    </section>
+  </main>
+</BaseLayout>

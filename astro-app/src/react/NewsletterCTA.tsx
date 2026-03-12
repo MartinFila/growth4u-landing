@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { saveLeadMagnetLead } from '../lib/firebase-client';
 
-const BOOKING_LINK = 'https://calendly.com/growth4u/consulta-estrategica';
+const BOOKING_LINK = 'https://api.leadconnectorhq.com/widget/booking/XsVb9H5fZjGeVArLn2EN';
 
 export default function NewsletterCTA() {
   const [step, setStep] = useState<'idle' | 'form' | 'done'>('idle');
