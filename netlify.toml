@@ -7,9 +7,19 @@
 [functions]
   node_bundler = "esbuild"
 
-[functions."trust-score-analyze"]
-  external_node_modules = ["@anthropic-ai/sdk"]
-  timeout = 300
+# Trust Score proxy → Vercel (Martin's app)
+[[redirects]]
+  from = "/trust-score/*"
+  to = "https://trust.growth4u.io/:splat"
+  status = 200
+  force = true
+
+# Redirect old trust score URL to new one
+[[redirects]]
+  from = "/recursos/trust-score/*"
+  to = "/trust-score/:splat"
+  status = 301
+  force = true
 
 # Redirects from old query parameter URLs to new clean URLs
 [[redirects]]

@@ -110,7 +110,7 @@ const breadcrumbSchema = {
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recursos.map((r) => (
           <a
-            href={`/recursos/${r.slug}/`}
+            href={r.slug === 'trust-score' ? '/trust-score/' : `/recursos/${r.slug}/`}
             class="group block bg-white rounded-2xl border border-slate-200 hover:border-[#6351d5]/40 hover:shadow-lg transition-all duration-200 overflow-hidden"
           >
             <div class="p-6">

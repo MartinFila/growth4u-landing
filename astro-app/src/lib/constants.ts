@@ -36,7 +36,7 @@ export const COLORS = {
 } as const;
 
 // Trust Score Analyzer
-export const TRUST_SCORE_URL = '/recursos/trust-score/';
+export const TRUST_SCORE_URL = '/trust-score/';
 
 // Social
 export const LINKEDIN_URL = 'https://www.linkedin.com/company/growth4u/';
