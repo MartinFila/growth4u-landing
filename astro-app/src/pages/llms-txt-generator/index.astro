@@ -45,20 +45,9 @@ const softwareSchema = {
           />
           <span class="hidden text-sm font-bold text-white/50 sm:inline">Tools</span>
         </a>
-        <div class="flex items-center gap-4">
-          <a href="/recursos/" class="text-sm font-semibold text-white/70 transition-colors hover:text-white">
-            Recursos
-          </a>
-          <a
-            href={BOOKING_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Habla con nosotros: Llamada estratégica"
-            class="rounded-full bg-white px-4 py-2 text-sm font-black text-[#6351d5] transition hover:bg-slate-100"
-          >
-            Habla con nosotros
-          </a>
-        </div>
+        <a href="/recursos/" class="text-sm font-semibold text-white/70 transition-colors hover:text-white">
+          Recursos
+        </a>
       </div>
 
       <div class="mx-auto grid max-w-6xl gap-8 px-4 pt-12 md:grid-cols-[0.9fr_1.1fr] md:items-end">
@@ -70,18 +59,6 @@ const softwareSchema = {
           <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
             Introduce tu web y genera un archivo preparado para asistentes de IA. La herramienta elige automáticamente las páginas con más señal.
           </p>
-          <div class="mt-7 flex flex-wrap items-center gap-3">
-            <a
-              href={BOOKING_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Habla con nosotros: Llamada estratégica"
-              class="inline-flex min-h-12 items-center justify-center rounded-full bg-[#0faec1] px-6 text-base font-black text-white shadow-lg shadow-black/20 transition hover:bg-[#0c94a4]"
-            >
-              Habla con nosotros
-            </a>
-            <span class="text-sm font-semibold text-white/55">Llamada estratégica</span>
-          </div>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/8 p-5 text-sm text-slate-300 shadow-2xl shadow-black/20 backdrop-blur">
           <div class="mb-3 flex items-center justify-between gap-3">
@@ -140,6 +117,23 @@ const softwareSchema = {
             <span id="quality-score" class="text-2xl font-black text-[#0faec1]">0</span>
           </div>
           <ul id="quality-list" class="grid gap-2 text-sm font-semibold text-slate-600"></ul>
+        </section>
+
+        <section id="result-cta" class="mt-4 rounded-2xl border border-[#6351d5]/20 bg-[#6351d5]/8 p-4" hidden>
+          <p class="text-xs font-black uppercase tracking-wider text-[#6351d5]">Siguiente paso</p>
+          <h2 class="mt-2 text-lg font-black leading-snug text-[#032149]">¿Quieres mejorar tu posicionamiento digital?</h2>
+          <p class="mt-2 text-sm font-semibold leading-relaxed text-slate-600">
+            Revisamos tu llms.txt, tu SEO y cómo apareces en respuestas de IA en una llamada estratégica.
+          </p>
+          <a
+            href={BOOKING_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Habla con nosotros: Llamada estratégica"
+            class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#6351d5] px-4 text-sm font-black text-white transition hover:bg-[#5242b8]"
+          >
+            Habla con nosotros
+          </a>
         </section>
 
         <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
@@ -215,6 +209,7 @@ const softwareSchema = {
   const qualityPanel = document.querySelector("#quality-panel");
   const qualityScore = document.querySelector("#quality-score");
   const qualityList = document.querySelector("#quality-list");
+  const resultCta = document.querySelector("#result-cta");
   const copyButton = document.querySelector("#copy-button");
   const downloadButton = document.querySelector("#download-button");
   const tabButtons = [...document.querySelectorAll(".tab-button")];
@@ -229,6 +224,7 @@ const softwareSchema = {
     setStatus("loading", "Analizando sitemap y páginas internas...");
     renderPages([]);
     renderQuality(null);
+    renderResultCta(false);
 
     try {
       const response = await fetch("/api/llms-txt-generator/generate", {
@@ -248,12 +244,14 @@ const softwareSchema = {
       renderOutput();
       renderPages(payload.pages || []);
       renderQuality(payload.quality);
+      renderResultCta(true);
       setStatus("success", `Generado con ${payload.stats.crawledPages} páginas. Calidad ${payload.quality?.score ?? "n/a"}/100.`);
     } catch (error) {
       result = null;
       output.textContent = `Error: ${error.message}`;
       renderPages([]);
       renderQuality(null);
+      renderResultCta(false);
       setStatus("error", error.message);
     } finally {
       setLoading(false);
@@ -376,6 +374,10 @@ const softwareSchema = {
       item.textContent = finding.message;
       qualityList.append(item);
     }
+  }
+
+  function renderResultCta(isVisible) {
+    resultCta.hidden = !isVisible;
   }
 
   async function copyText(text) {
