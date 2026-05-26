@@ -211,7 +211,7 @@ const softwareSchema = {
       const response = await fetch("/api/llms-txt-generator/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: urlInput.value, maxPages: 100 })
+        body: JSON.stringify({ url: urlInput.value })
       });
 
       const payload = await response.json();

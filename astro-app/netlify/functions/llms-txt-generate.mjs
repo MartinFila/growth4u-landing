@@ -64,7 +64,9 @@ function parseRequest(event) {
 }
 
 async function cachedGenerate(url, maxPages) {
-  const limit = Math.max(5, Math.min(Number(maxPages || 100), 100));
+  const defaultLimit = Number(process.env.LLMS_TXT_DEFAULT_MAX_PAGES || 25);
+  const hardLimit = Number(process.env.LLMS_TXT_MAX_PAGES || 25);
+  const limit = Math.max(5, Math.min(Number(maxPages || defaultLimit), hardLimit));
   const cacheKey = JSON.stringify({ url: String(url || "").trim(), maxPages: limit });
   const cached = cache.get(cacheKey);
 
