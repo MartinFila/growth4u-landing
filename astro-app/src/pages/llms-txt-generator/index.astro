@@ -1,0 +1,380 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE_URL } from '../../lib/constants';
+
+const title = 'Generador de llms.txt gratuito';
+const description = 'Crea un archivo llms.txt y llms-full.txt para que ChatGPT, Claude, Perplexity y otros asistentes entiendan mejor tu sitio web.';
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+    { '@type': 'ListItem', position: 2, name: 'Generador de llms.txt', item: `${SITE_URL}/llms-txt-generator/` },
+  ],
+};
+
+const softwareSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Generador de llms.txt de Growth4U',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+  url: `${SITE_URL}/llms-txt-generator/`,
+  description,
+};
+---
+
+<BaseLayout
+  title={`${title} | Growth4U`}
+  description={description}
+  canonical={`${SITE_URL}/llms-txt-generator/`}
+  jsonLd={[breadcrumbSchema, softwareSchema]}
+>
+  <main class="min-h-screen bg-[#f7f9fc] text-[#032149]">
+    <section class="bg-[#032149] pt-8 pb-10 md:pt-10 md:pb-14">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4">
+        <a href="/" class="inline-flex items-center gap-3 text-white">
+          <img
+            src="https://i.imgur.com/imHxGWI.png"
+            alt="Growth4U"
+            width="133"
+            height="20"
+            class="h-5 w-auto object-contain brightness-0 invert"
+          />
+          <span class="hidden text-sm font-bold text-white/50 sm:inline">Tools</span>
+        </a>
+        <a href="/recursos/" class="text-sm font-semibold text-white/70 transition-colors hover:text-white">
+          Recursos
+        </a>
+      </div>
+
+      <div class="mx-auto grid max-w-6xl gap-8 px-4 pt-12 md:grid-cols-[0.9fr_1.1fr] md:items-end">
+        <div>
+          <p class="mb-4 text-sm font-black uppercase tracking-wider text-[#0faec1]">Herramienta gratuita</p>
+          <h1 class="max-w-3xl text-4xl font-black leading-tight tracking-tight text-white md:text-6xl">
+            Generador de llms.txt
+          </h1>
+          <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
+            Introduce tu web y genera un archivo preparado para asistentes de IA. La herramienta elige automáticamente las páginas con más señal.
+          </p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/8 p-5 text-sm text-slate-300 shadow-2xl shadow-black/20 backdrop-blur">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <span class="font-bold text-white">Cobertura automática</span>
+            <span class="rounded-full bg-[#0faec1]/15 px-3 py-1 text-xs font-black uppercase tracking-wide text-[#70e7f2]">Sin configurar</span>
+          </div>
+          <p class="leading-relaxed">
+            Lee sitemap, rastrea enlaces internos, prioriza páginas útiles y descarta URLs de bajo valor. El límite técnico existe solo para evitar crawls largos.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[380px_1fr] lg:items-start">
+      <aside class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <form id="llms-form" class="grid gap-4">
+          <label class="grid gap-2 text-sm font-bold text-slate-700">
+            URL del sitio
+            <input
+              id="url-input"
+              name="url"
+              type="text"
+              inputmode="url"
+              autocomplete="url"
+              placeholder="https://example.com"
+              required
+              class="min-h-12 rounded-xl border border-slate-300 bg-white px-4 text-base font-semibold text-[#032149] outline-none transition focus:border-[#6351d5] focus:ring-4 focus:ring-[#6351d5]/10"
+            />
+          </label>
+
+          <div class="rounded-xl border border-[#0faec1]/25 bg-[#0faec1]/8 p-4">
+            <p class="text-xs font-black uppercase tracking-wider text-[#078596]">Selección automática</p>
+            <p class="mt-2 text-sm font-semibold leading-relaxed text-slate-600">
+              No tienes que elegir número de páginas. La herramienta busca calidad primero y usa más páginas solo cuando aportan contexto.
+            </p>
+          </div>
+
+          <button
+            id="submit-button"
+            type="submit"
+            class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#6351d5] px-5 text-base font-black text-white shadow-lg shadow-[#6351d5]/20 transition hover:bg-[#5242b8] disabled:cursor-wait disabled:opacity-70"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <span>Generar</span>
+          </button>
+        </form>
+
+        <div id="status" role="status" aria-live="polite" class="mt-4 flex min-h-11 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-600">
+          <span id="status-dot" class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+          <span id="status-text">Listo</span>
+        </div>
+
+        <section id="quality-panel" class="mt-4 rounded-2xl border border-slate-200 bg-white p-4" hidden>
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <h2 class="text-base font-black text-[#032149]">Calidad</h2>
+            <span id="quality-score" class="text-2xl font-black text-[#0faec1]">0</span>
+          </div>
+          <ul id="quality-list" class="grid gap-2 text-sm font-semibold text-slate-600"></ul>
+        </section>
+
+        <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <h2 class="text-base font-black text-[#032149]">Páginas analizadas</h2>
+            <span id="page-total" class="rounded-full bg-slate-100 px-3 py-1 text-sm font-black text-slate-700">0</span>
+          </div>
+          <ol id="pages-list" class="grid max-h-72 gap-3 overflow-auto pr-1 text-sm">
+            <li class="text-slate-500">Aún no hay resultados.</li>
+          </ol>
+        </section>
+      </aside>
+
+      <section class="min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="flex flex-col gap-4 border-b border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-xs font-black uppercase tracking-wider text-[#6351d5]">Resultado</p>
+            <h2 id="output-title" class="mt-1 text-2xl font-black text-[#032149]">llms.txt</h2>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1" role="tablist" aria-label="Archivos generados">
+              <button class="tab-button rounded-lg bg-white px-3 py-2 text-sm font-black text-[#032149] shadow-sm" type="button" role="tab" aria-selected="true" data-tab="llmsTxt">llms.txt</button>
+              <button class="tab-button rounded-lg px-3 py-2 text-sm font-black text-slate-500" type="button" role="tab" aria-selected="false" data-tab="llmsFullTxt">llms-full.txt</button>
+            </div>
+            <button id="copy-button" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:border-[#6351d5] hover:text-[#6351d5]" type="button" title="Copiar resultado" aria-label="Copiar resultado">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            </button>
+            <button id="download-button" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:border-[#6351d5] hover:text-[#6351d5]" type="button" title="Descargar resultado" aria-label="Descargar resultado">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <pre id="output" tabindex="0" class="min-h-[620px] overflow-auto whitespace-pre-wrap break-words bg-[#071831] p-5 text-sm leading-relaxed text-slate-100 md:p-6"># Tu sitio
+
+> Resumen breve para asistentes de IA.
+
+## Core Pages
+
+- [Inicio](https://example.com): Página principal del sitio.</pre>
+      </section>
+    </section>
+
+    <section class="mx-auto max-w-6xl px-4 pb-16">
+      <div class="grid gap-4 md:grid-cols-3">
+        <details class="rounded-2xl border border-slate-200 bg-white p-5">
+          <summary class="cursor-pointer text-base font-black text-[#032149]">¿Qué se genera?</summary>
+          <p class="mt-3 text-sm leading-relaxed text-slate-600">Un `llms.txt` compacto con las URLs importantes y un `llms-full.txt` con contenido extraído en Markdown.</p>
+        </details>
+        <details class="rounded-2xl border border-slate-200 bg-white p-5">
+          <summary class="cursor-pointer text-base font-black text-[#032149]">¿Cómo elige las páginas?</summary>
+          <p class="mt-3 text-sm leading-relaxed text-slate-600">Empieza por sitemap y enlaces internos, puntúa las URLs por valor semántico y prioriza servicios, recursos, casos, documentación y páginas principales.</p>
+        </details>
+        <details class="rounded-2xl border border-slate-200 bg-white p-5">
+          <summary class="cursor-pointer text-base font-black text-[#032149]">¿Dónde se publica?</summary>
+          <p class="mt-3 text-sm leading-relaxed text-slate-600">Cuando esté validado, sube el archivo final a la raíz de tu dominio: `https://example.com/llms.txt`.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script is:inline>
+  const form = document.querySelector("#llms-form");
+  const urlInput = document.querySelector("#url-input");
+  const submitButton = document.querySelector("#submit-button");
+  const statusText = document.querySelector("#status-text");
+  const statusDot = document.querySelector("#status-dot");
+  const output = document.querySelector("#output");
+  const outputTitle = document.querySelector("#output-title");
+  const pagesList = document.querySelector("#pages-list");
+  const pageTotal = document.querySelector("#page-total");
+  const qualityPanel = document.querySelector("#quality-panel");
+  const qualityScore = document.querySelector("#quality-score");
+  const qualityList = document.querySelector("#quality-list");
+  const copyButton = document.querySelector("#copy-button");
+  const downloadButton = document.querySelector("#download-button");
+  const tabButtons = [...document.querySelectorAll(".tab-button")];
+
+  let result = null;
+  let activeTab = "llmsTxt";
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    setLoading(true);
+    setStatus("loading", "Analizando sitemap y páginas internas...");
+    renderPages([]);
+    renderQuality(null);
+
+    try {
+      const response = await fetch("/api/llms-txt-generator/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlInput.value, maxPages: 100 })
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || "No se pudo generar el archivo.");
+      }
+
+      result = payload;
+      activeTab = "llmsTxt";
+      updateTabs();
+      renderOutput();
+      renderPages(payload.pages || []);
+      renderQuality(payload.quality);
+      setStatus("success", `Generado con ${payload.stats.crawledPages} páginas. Calidad ${payload.quality?.score ?? "n/a"}/100.`);
+    } catch (error) {
+      result = null;
+      output.textContent = `Error: ${error.message}`;
+      renderPages([]);
+      renderQuality(null);
+      setStatus("error", error.message);
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  for (const button of tabButtons) {
+    button.addEventListener("click", () => {
+      activeTab = button.dataset.tab;
+      updateTabs();
+      renderOutput();
+    });
+  }
+
+  copyButton?.addEventListener("click", async () => {
+    try {
+      await copyText(output.textContent);
+      setStatus("success", "Resultado copiado.");
+    } catch {
+      setStatus("error", "No se pudo copiar. Selecciona el texto manualmente.");
+    }
+  });
+
+  downloadButton?.addEventListener("click", () => {
+    const fileName = activeTab === "llmsFullTxt" ? "llms-full.txt" : "llms.txt";
+    const blob = new Blob([output.textContent], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  });
+
+  function setLoading(isLoading) {
+    submitButton.disabled = isLoading;
+    submitButton.querySelector("span").textContent = isLoading ? "Generando..." : "Generar";
+  }
+
+  function setStatus(kind, message) {
+    statusText.textContent = message;
+    statusDot.className = "h-2.5 w-2.5 rounded-full";
+    if (kind === "loading") {
+      statusDot.classList.add("bg-[#45b6f7]", "animate-pulse");
+    } else if (kind === "error") {
+      statusDot.classList.add("bg-red-500");
+    } else if (kind === "success") {
+      statusDot.classList.add("bg-emerald-500");
+    } else {
+      statusDot.classList.add("bg-amber-400");
+    }
+  }
+
+  function updateTabs() {
+    for (const button of tabButtons) {
+      const isActive = button.dataset.tab === activeTab;
+      button.classList.toggle("bg-white", isActive);
+      button.classList.toggle("text-[#032149]", isActive);
+      button.classList.toggle("shadow-sm", isActive);
+      button.classList.toggle("text-slate-500", !isActive);
+      button.setAttribute("aria-selected", String(isActive));
+    }
+  }
+
+  function renderOutput() {
+    if (!result) return;
+    outputTitle.textContent = activeTab === "llmsFullTxt" ? "llms-full.txt" : "llms.txt";
+    output.textContent = result[activeTab] || "";
+  }
+
+  function renderPages(pages) {
+    pageTotal.textContent = String(pages.length);
+    pagesList.replaceChildren();
+
+    if (!pages.length) {
+      const row = document.createElement("li");
+      row.className = "text-slate-500";
+      row.textContent = "Aún no hay resultados.";
+      pagesList.append(row);
+      return;
+    }
+
+    for (const page of pages) {
+      const row = document.createElement("li");
+      row.className = "grid gap-1 border-b border-slate-100 pb-3 last:border-b-0 last:pb-0";
+
+      const link = document.createElement("a");
+      link.href = page.url;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      link.className = "font-bold text-[#032149] hover:text-[#6351d5]";
+      link.textContent = page.title || page.url;
+
+      const meta = document.createElement("span");
+      meta.className = "break-words text-xs font-semibold text-slate-500";
+      meta.textContent = `${page.section} - ${page.url}`;
+
+      row.append(link, meta);
+      pagesList.append(row);
+    }
+  }
+
+  function renderQuality(quality) {
+    qualityPanel.hidden = !quality;
+    qualityList.replaceChildren();
+
+    if (!quality) {
+      qualityScore.textContent = "0";
+      return;
+    }
+
+    qualityScore.textContent = String(quality.score);
+    const findings = quality.findings?.length
+      ? quality.findings
+      : [{ severity: "pass", message: `Calidad ${quality.grade}. Sin problemas bloqueantes.` }];
+
+    for (const finding of findings.slice(0, 4)) {
+      const item = document.createElement("li");
+      item.className = finding.severity === "high" ? "text-red-600" : finding.severity === "medium" ? "text-amber-700" : "text-slate-600";
+      item.textContent = finding.message;
+      qualityList.append(item);
+    }
+  }
+
+  async function copyText(text) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.append(textarea);
+    textarea.select();
+
+    try {
+      if (!document.execCommand("copy")) {
+        throw new Error("copy command failed");
+      }
+    } finally {
+      textarea.remove();
+    }
+  }
+</script>
