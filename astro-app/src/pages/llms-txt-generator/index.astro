@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { SITE_URL } from '../../lib/constants';
+import { BOOKING_LINK, SITE_URL } from '../../lib/constants';
 
 const title = 'Generador de llms.txt gratuito';
 const description = 'Crea un archivo llms.txt y llms-full.txt para que ChatGPT, Claude, Perplexity y otros asistentes entiendan mejor tu sitio web.';
@@ -45,9 +45,20 @@ const softwareSchema = {
           />
           <span class="hidden text-sm font-bold text-white/50 sm:inline">Tools</span>
         </a>
-        <a href="/recursos/" class="text-sm font-semibold text-white/70 transition-colors hover:text-white">
-          Recursos
-        </a>
+        <div class="flex items-center gap-4">
+          <a href="/recursos/" class="text-sm font-semibold text-white/70 transition-colors hover:text-white">
+            Recursos
+          </a>
+          <a
+            href={BOOKING_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Habla con nosotros: Llamada estratégica"
+            class="rounded-full bg-white px-4 py-2 text-sm font-black text-[#6351d5] transition hover:bg-slate-100"
+          >
+            Habla con nosotros
+          </a>
+        </div>
       </div>
 
       <div class="mx-auto grid max-w-6xl gap-8 px-4 pt-12 md:grid-cols-[0.9fr_1.1fr] md:items-end">
@@ -59,6 +70,18 @@ const softwareSchema = {
           <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
             Introduce tu web y genera un archivo preparado para asistentes de IA. La herramienta elige automáticamente las páginas con más señal.
           </p>
+          <div class="mt-7 flex flex-wrap items-center gap-3">
+            <a
+              href={BOOKING_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Habla con nosotros: Llamada estratégica"
+              class="inline-flex min-h-12 items-center justify-center rounded-full bg-[#0faec1] px-6 text-base font-black text-white shadow-lg shadow-black/20 transition hover:bg-[#0c94a4]"
+            >
+              Habla con nosotros
+            </a>
+            <span class="text-sm font-semibold text-white/55">Llamada estratégica</span>
+          </div>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/8 p-5 text-sm text-slate-300 shadow-2xl shadow-black/20 backdrop-blur">
           <div class="mb-3 flex items-center justify-between gap-3">
