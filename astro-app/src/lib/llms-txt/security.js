@@ -183,10 +183,6 @@ function normalizeUrlParts(url) {
     url.port = "";
   }
 
-  if (url.pathname.length > 1) {
-    url.pathname = url.pathname.replace(/\/+$/, "");
-  }
-
   if ([...url.searchParams.keys()].length === 0) {
     url.search = "";
   }
