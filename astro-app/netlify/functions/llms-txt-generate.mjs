@@ -66,15 +66,17 @@ function parseRequest(event) {
 async function cachedGenerate(url, maxPages) {
   const defaultLimit = Number(process.env.LLMS_TXT_DEFAULT_MAX_PAGES || 25);
   const hardLimit = Number(process.env.LLMS_TXT_MAX_PAGES || 25);
+  const renderedFallback = process.env.LLMS_TXT_RENDERED_FALLBACK !== "false";
+  const maxRenderedPages = Number(process.env.LLMS_TXT_MAX_RENDERED_PAGES || 8);
   const limit = Math.max(5, Math.min(Number(maxPages || defaultLimit), hardLimit));
-  const cacheKey = JSON.stringify({ url: String(url || "").trim(), maxPages: limit });
+  const cacheKey = JSON.stringify({ url: String(url || "").trim(), maxPages: limit, renderedFallback, maxRenderedPages });
   const cached = cache.get(cacheKey);
 
   if (cached) {
     return { ...cached, cached: true };
   }
 
-  const result = await runLimited(() => generateFromWebsite(url, { maxPages: limit }));
+  const result = await runLimited(() => generateFromWebsite(url, { maxPages: limit, renderedFallback, maxRenderedPages }));
   cache.set(cacheKey, result);
   return result;
 }

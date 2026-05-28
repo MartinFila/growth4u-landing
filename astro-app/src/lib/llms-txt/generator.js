@@ -46,7 +46,10 @@ export function generateLlmsFiles(crawlResult) {
     stats: {
       crawledPages: pages.length,
       failedPages: crawlResult.errors.length,
-      source: crawlResult.startUrl
+      source: crawlResult.startUrl,
+      renderedPages: crawlResult.stats?.renderedPages || 0,
+      discoveredSpaRoutes: crawlResult.stats?.discoveredSpaRoutes || 0,
+      spaShellsDetected: crawlResult.stats?.spaShellsDetected || 0
     },
     errors: crawlResult.errors
   };

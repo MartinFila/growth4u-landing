@@ -57,7 +57,7 @@ const softwareSchema = {
             Generador de llms.txt
           </h1>
           <p class="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
-            Introduce tu web y genera un archivo preparado para asistentes de IA. La herramienta elige automáticamente las páginas con más señal.
+            Introduce tu web y genera un archivo preparado para asistentes de IA. La herramienta elige automáticamente las páginas con más señal, incluso en sitios SPA.
           </p>
         </div>
         <div class="rounded-2xl border border-white/10 bg-white/8 p-5 text-sm text-slate-300 shadow-2xl shadow-black/20 backdrop-blur">
@@ -66,7 +66,7 @@ const softwareSchema = {
             <span class="rounded-full bg-[#0faec1]/15 px-3 py-1 text-xs font-black uppercase tracking-wide text-[#70e7f2]">Sin configurar</span>
           </div>
           <p class="leading-relaxed">
-            Lee sitemap, rastrea enlaces internos, prioriza páginas útiles y descarta URLs de bajo valor. El límite técnico existe solo para evitar crawls largos.
+            Lee sitemap, rastrea enlaces internos, detecta rutas en bundles JavaScript y usa renderizado de lectura cuando el HTML llega vacío.
           </p>
         </div>
       </div>
@@ -92,7 +92,7 @@ const softwareSchema = {
           <div class="rounded-xl border border-[#0faec1]/25 bg-[#0faec1]/8 p-4">
             <p class="text-xs font-black uppercase tracking-wider text-[#078596]">Selección automática</p>
             <p class="mt-2 text-sm font-semibold leading-relaxed text-slate-600">
-              No tienes que elegir número de páginas. La herramienta busca calidad primero y usa más páginas solo cuando aportan contexto.
+              No tienes que elegir número de páginas. La herramienta busca calidad primero, detecta SPAs y usa más páginas solo cuando aportan contexto.
             </p>
           </div>
 
@@ -185,7 +185,7 @@ const softwareSchema = {
         </details>
         <details class="rounded-2xl border border-slate-200 bg-white p-5">
           <summary class="cursor-pointer text-base font-black text-[#032149]">¿Cómo elige las páginas?</summary>
-          <p class="mt-3 text-sm leading-relaxed text-slate-600">Empieza por sitemap y enlaces internos, puntúa las URLs por valor semántico y prioriza servicios, recursos, casos, documentación y páginas principales.</p>
+          <p class="mt-3 text-sm leading-relaxed text-slate-600">Empieza por sitemap y enlaces internos, detecta rutas en JavaScript cuando una web es SPA, puntúa las URLs por valor semántico y prioriza servicios, recursos, casos, documentación y páginas principales.</p>
         </details>
         <details class="rounded-2xl border border-slate-200 bg-white p-5">
           <summary class="cursor-pointer text-base font-black text-[#032149]">¿Dónde se publica?</summary>
@@ -221,7 +221,7 @@ const softwareSchema = {
     event.preventDefault();
 
     setLoading(true);
-    setStatus("loading", "Analizando sitemap y páginas internas...");
+    setStatus("loading", "Analizando sitemap, enlaces internos y rutas SPA...");
     renderPages([]);
     renderQuality(null);
     renderResultCta(false);
@@ -245,7 +245,10 @@ const softwareSchema = {
       renderPages(payload.pages || []);
       renderQuality(payload.quality);
       renderResultCta(true);
-      setStatus("success", `Generado con ${payload.stats.crawledPages} páginas. Calidad ${payload.quality?.score ?? "n/a"}/100.`);
+      const spaDetail = payload.stats?.renderedPages
+        ? ` Renderizado SPA en ${payload.stats.renderedPages} página${payload.stats.renderedPages === 1 ? "" : "s"}.`
+        : "";
+      setStatus("success", `Generado con ${payload.stats.crawledPages} páginas. Calidad ${payload.quality?.score ?? "n/a"}/100.${spaDetail}`);
     } catch (error) {
       result = null;
       output.textContent = `Error: ${error.message}`;

@@ -4,6 +4,8 @@ import { fetchTextResource } from "./fetcher.js";
 import { isInternalPageUrl, normalizeCrawlUrl, normalizeInputUrl } from "./security.js";
 import { generateLlmsFiles } from "./generator.js";
 import { loadRobotsPolicy } from "./robots.js";
+import { fetchRenderedPage } from "./reader.js";
+import { discoverSpaRoutes, looksLikeSpaShell } from "./spa.js";
 
 export async function generateFromWebsite(inputUrl, options = {}) {
   const crawlResult = await crawlSite(inputUrl, options);
@@ -12,22 +14,26 @@ export async function generateFromWebsite(inputUrl, options = {}) {
 
 export async function crawlSite(inputUrl, options = {}) {
   const maxPages = clampNumber(options.maxPages ?? 40, 1, 100);
+  const maxRenderedPages = clampNumber(options.maxRenderedPages ?? Math.min(8, maxPages), 0, maxPages);
   const startUrl = normalizeInputUrl(inputUrl);
   const fetcher = options.fetcher || fetchTextResource;
   const queue = [];
   const queued = new Set();
   const pages = [];
   const errors = [];
+  let renderedPages = 0;
+  let discoveredSpaRoutes = 0;
+  let spaShellsDetected = 0;
   const robotsPolicy = await loadRobotsPolicy(startUrl, { fetcher });
 
   const addToQueue = (candidate) => {
     const normalized = normalizeCrawlUrl(candidate, startUrl);
     if (!normalized || queued.has(normalized.href) || !isInternalPageUrl(normalized, startUrl)) {
-      return;
+      return false;
     }
 
     if (!robotsPolicy.isAllowed(normalized)) {
-      return;
+      return false;
     }
 
     queued.add(normalized.href);
@@ -36,6 +42,7 @@ export async function crawlSite(inputUrl, options = {}) {
       score: scoreCandidateUrl(normalized, startUrl)
     });
     queue.sort((a, b) => b.score - a.score);
+    return true;
   };
 
   addToQueue(startUrl);
@@ -49,14 +56,26 @@ export async function crawlSite(inputUrl, options = {}) {
     const nextUrl = queue.shift().url;
 
     try {
-      const resource = await fetcher(nextUrl);
-      if (!isSupportedContent(resource.contentType, resource.url)) {
+      const result = await fetchAndExtractPage(nextUrl, {
+        startUrl,
+        fetcher,
+        renderedFallback: options.renderedFallback !== false && renderedPages < maxRenderedPages
+      });
+
+      if (!result) {
         continue;
       }
 
-      const page = extractPage(resource.text, resource.url, resource.contentType);
+      const { page, resource, usedRenderedFallback, isSpaShell } = result;
       if (!page.text && !page.markdown) {
         continue;
+      }
+
+      if (usedRenderedFallback) {
+        renderedPages += 1;
+      }
+      if (isSpaShell) {
+        spaShellsDetected += 1;
       }
 
       pages.push(page);
@@ -66,6 +85,23 @@ export async function crawlSite(inputUrl, options = {}) {
           break;
         }
         addToQueue(link);
+      }
+
+      if (resource?.text && isSupportedContent(resource.contentType, resource.url)) {
+        const spaRoutes = await discoverSpaRoutes(resource.text, resource.url, {
+          fetcher,
+          rootUrl: startUrl,
+          maxRoutes: maxPages * 2
+        });
+
+        for (const route of spaRoutes) {
+          if (queue.length + queued.size > maxPages * 8) {
+            break;
+          }
+          if (addToQueue(route)) {
+            discoveredSpaRoutes += 1;
+          }
+        }
       }
     } catch (error) {
       errors.push({
@@ -84,8 +120,64 @@ export async function crawlSite(inputUrl, options = {}) {
     startUrl: startUrl.href,
     site: deriveSiteInfo(pages, startUrl),
     pages: dedupePages(pages).slice(0, maxPages),
-    errors
+    errors,
+    stats: {
+      renderedPages,
+      discoveredSpaRoutes,
+      spaShellsDetected
+    }
   };
+}
+
+async function fetchAndExtractPage(nextUrl, options) {
+  const { startUrl, fetcher, renderedFallback } = options;
+  let resource;
+  let staticPage;
+
+  try {
+    resource = await fetcher(nextUrl);
+    if (!isSupportedContent(resource.contentType, resource.url)) {
+      return null;
+    }
+
+    staticPage = extractPage(resource.text, resource.url, resource.contentType);
+    const isSpaShell = looksLikeSpaShell(resource.text, staticPage);
+
+    if (!renderedFallback || !shouldUseRenderedFallback(resource, staticPage, isSpaShell)) {
+      return { page: staticPage, resource, usedRenderedFallback: false, isSpaShell };
+    }
+
+    const renderedPage = await fetchRenderedPage(resource.url, {
+      fetcher,
+      rootUrl: startUrl
+    });
+
+    if (isBetterRenderedPage(renderedPage, staticPage)) {
+      return { page: renderedPage, resource, usedRenderedFallback: true, isSpaShell };
+    }
+
+    return { page: staticPage, resource, usedRenderedFallback: false, isSpaShell };
+  } catch (error) {
+    if (!renderedFallback) {
+      throw error;
+    }
+
+    const renderedPage = await fetchRenderedPage(nextUrl, {
+      fetcher,
+      rootUrl: startUrl
+    });
+
+    if (!renderedPage.text && !renderedPage.markdown) {
+      throw error;
+    }
+
+    return {
+      page: renderedPage,
+      resource,
+      usedRenderedFallback: true,
+      isSpaShell: false
+    };
+  }
 }
 
 function deriveSiteInfo(pages, startUrl) {
@@ -149,6 +241,40 @@ function isSupportedContent(contentType, resourceUrl) {
     pathname.endsWith(".md") ||
     !pathname.includes(".")
   );
+}
+
+function shouldUseRenderedFallback(resource, page, isSpaShell) {
+  if (!resource || !page || !isHtmlLike(resource.contentType, resource.url)) {
+    return false;
+  }
+
+  const textLength = String(page.text || "").length;
+  const markdownLength = String(page.markdown || "").length;
+
+  return (
+    isSpaShell ||
+    /you need to enable javascript|enable javascript to run this app|javascript is required/i.test(resource.text || "") ||
+    (textLength < 260 && markdownLength < 450 && /<script\b[^>]+src=/i.test(resource.text || ""))
+  );
+}
+
+function isBetterRenderedPage(renderedPage, staticPage) {
+  const renderedLength = String(renderedPage?.text || renderedPage?.markdown || "").length;
+  const staticLength = String(staticPage?.text || staticPage?.markdown || "").length;
+  const renderedLinks = renderedPage?.links?.length || 0;
+  const staticLinks = staticPage?.links?.length || 0;
+
+  if (staticLength < 40) {
+    return renderedLength >= 40;
+  }
+
+  return renderedLength >= 120 && (renderedLength > staticLength + 180 || renderedLinks > staticLinks);
+}
+
+function isHtmlLike(contentType, resourceUrl) {
+  const type = contentType.toLowerCase();
+  const pathname = new URL(resourceUrl).pathname.toLowerCase();
+  return type.includes("text/html") || type.includes("application/xhtml") || pathname.endsWith(".html") || !pathname.includes(".");
 }
 
 function scoreCandidateUrl(candidateUrl, startUrl) {
